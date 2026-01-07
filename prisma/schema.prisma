@@ -1,0 +1,277 @@
+// Mortis Atlas - VC/Investment CRM Schema
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// NextAuth.js Models
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  companies     Company[]
+  contacts      Contact[]
+  deals         Deal[]
+  activities    Activity[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// Core CRM Models
+// ============================================
+
+model Company {
+  id              String        @id @default(cuid())
+  name            String
+  website         String?
+  description     String?       @db.Text
+  stage           CompanyStage  @default(PROSPECT)
+  sector          String?       // e.g., "FinTech", "HealthTech", "SaaS"
+  location        String?
+  foundedYear     Int?
+  employeeCount   String?       // e.g., "1-10", "11-50", "51-200"
+  linkedinUrl     String?
+  logoUrl         String?
+  notes           String?       @db.Text
+
+  // Ownership
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  contacts        Contact[]
+  deals           Deal[]
+  activities      Activity[]
+  tags            CompanyTag[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([stage])
+  @@index([sector])
+  @@index([name])
+}
+
+enum CompanyStage {
+  PROSPECT        // Initial identification
+  QUALIFIED       // Meets investment criteria
+  ENGAGED         // Active conversations
+  DUE_DILIGENCE   // Deep dive analysis
+  PASSED          // Decided not to pursue
+  PORTFOLIO       // Invested company
+  EXITED          // Successfully exited
+}
+
+model Contact {
+  id              String     @id @default(cuid())
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  role            String?    // e.g., "CEO", "CTO", "Founder"
+  linkedinUrl     String?
+  notes           String?    @db.Text
+  isPrimary       Boolean    @default(false) // Primary contact for company
+
+  // Ownership
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Company relationship (optional - contact can exist without company)
+  companyId       String?
+  company         Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  // Relations
+  activities      Activity[]
+  deals           Deal[]     @relation("DealContact")
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([email])
+  @@index([lastName, firstName])
+}
+
+model Deal {
+  id              String     @id @default(cuid())
+  dealName        String
+  amount          Decimal?   @db.Decimal(15, 2) // Investment amount
+  valuation       Decimal?   @db.Decimal(15, 2) // Company valuation
+  stage           DealStage  @default(INITIAL_REVIEW)
+  probability     Int?       // 0-100 likelihood of closing
+  expectedClose   DateTime?
+  actualClose     DateTime?
+  notes           String?    @db.Text
+
+  // Ownership
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Company relationship
+  companyId       String
+  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Primary contact for this deal
+  contactId       String?
+  contact         Contact?   @relation("DealContact", fields: [contactId], references: [id], onDelete: SetNull)
+
+  // Relations
+  activities      Activity[]
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([contactId])
+  @@index([stage])
+  @@index([expectedClose])
+}
+
+enum DealStage {
+  INITIAL_REVIEW    // First look at opportunity
+  MEETING_SCHEDULED // Initial meeting set up
+  DEEP_DIVE         // Detailed analysis
+  PARTNER_REVIEW    // Internal partner discussion
+  TERM_SHEET        // Terms being negotiated
+  LEGAL_DILIGENCE   // Legal review
+  CLOSED_WON        // Deal completed
+  CLOSED_LOST       // Deal did not close
+}
+
+model Activity {
+  id              String       @id @default(cuid())
+  type            ActivityType
+  subject         String
+  description     String?      @db.Text
+  activityDate    DateTime     @default(now())
+  dueDate         DateTime?    // For tasks
+  completed       Boolean      @default(false)
+
+  // Ownership
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Polymorphic relationships (activity can be linked to any/all)
+  companyId       String?
+  company         Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contactId       String?
+  contact         Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  dealId          String?
+  deal            Deal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([contactId])
+  @@index([dealId])
+  @@index([activityDate])
+  @@index([type])
+  @@index([dueDate])
+}
+
+enum ActivityType {
+  EMAIL         // Email sent/received
+  CALL          // Phone call
+  MEETING       // In-person or video meeting
+  NOTE          // General note
+  TASK          // To-do item
+  DEAL_UPDATE   // Deal stage change or update
+  INTRO         // Introduction made
+  DOCUMENT      // Document shared/received
+}
+
+// ============================================
+// Tagging System
+// ============================================
+
+model Tag {
+  id              String       @id @default(cuid())
+  name            String       @unique
+  color           String?      // Hex color for UI display
+  category        String?      // e.g., "Sector", "Technology", "Geography", "Theme"
+
+  // Relations
+  companies       CompanyTag[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([category])
+}
+
+model CompanyTag {
+  companyId       String
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  tagId           String
+  tag             Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  assignedAt      DateTime     @default(now())
+
+  @@id([companyId, tagId])
+  @@index([companyId])
+  @@index([tagId])
+}

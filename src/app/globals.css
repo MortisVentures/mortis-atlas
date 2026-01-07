@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+
+@layer base {
+  /* Mortis Atlas Brand Colors - Dark Mode First */
+  :root {
+    --background: 0 0% 0%;              /* Pure black */
+    --foreground: 0 0% 95%;             /* Off-white text */
+    --card: 0 0% 5%;                    /* Slightly lighter black */
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 170 100% 50%;            /* Cyan - center of gradient */
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;              /* Dark gray */
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 270 91% 65%;              /* Purple accent */
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 0 0% 15%;                 /* Subtle dark border */
+    --input: 0 0% 12%;
+    --ring: 170 100% 50%;               /* Cyan ring */
+    --chart-1: 100 100% 65%;            /* Green */
+    --chart-2: 170 100% 50%;            /* Cyan */
+    --chart-3: 200 100% 55%;            /* Blue */
+    --chart-4: 270 91% 65%;             /* Purple */
+    --chart-5: 310 80% 60%;             /* Magenta */
+    --radius: 0.5rem;
+  }
+}
+
+
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
