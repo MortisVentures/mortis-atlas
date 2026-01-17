@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCompanies, getCompanyStats, getUniqueSectors } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,9 +14,7 @@ import {
 } from "@/components/ui/table";
 import { CompanyStage } from "@prisma/client";
 import { CompaniesFilters } from "@/components/companies-filters";
-
-// Temporary user ID until auth is implemented
-const TEMP_USER_ID = "temp-user-id";
+import { auth } from "@/lib/auth";
 
 interface PageProps {
   searchParams: Promise<{
@@ -81,8 +80,8 @@ function TableSkeleton() {
 }
 
 // Stats cards component
-async function PipelineStats() {
-  const stats = await getCompanyStats(TEMP_USER_ID);
+async function PipelineStats({ userId }: { userId: string }) {
+  const stats = await getCompanyStats(userId);
 
   const statCards = [
     {
@@ -138,15 +137,17 @@ async function CompaniesTable({
   stage,
   sector,
   page,
+  userId,
 }: {
   search?: string;
   stage?: string;
   sector?: string;
   page?: number;
+  userId: string;
 }) {
   const { data: companies, pagination } = await getCompanies(
     {
-      userId: TEMP_USER_ID,
+      userId,
       search,
       stage: stage as CompanyStage | undefined,
       sector,
@@ -301,12 +302,19 @@ async function CompaniesTable({
 }
 
 // Filters wrapper to fetch sectors
-async function FiltersWrapper() {
-  const sectors = await getUniqueSectors(TEMP_USER_ID);
+async function FiltersWrapper({ userId }: { userId: string }) {
+  const sectors = await getUniqueSectors(userId);
   return <CompaniesFilters sectors={sectors} />;
 }
 
 export default async function CompaniesPage({ searchParams }: PageProps) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+  const userId = session.user.id;
+
   const params = await searchParams;
   const { search, stage, sector, page } = params;
 
@@ -355,7 +363,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <PipelineStats />
+        <PipelineStats userId={userId} />
       </Suspense>
 
       {/* Filters */}
@@ -368,7 +376,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <FiltersWrapper />
+        <FiltersWrapper userId={userId} />
       </Suspense>
 
       {/* Companies Table */}
@@ -378,6 +386,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
           stage={stage}
           sector={sector}
           page={page ? parseInt(page) : 1}
+          userId={userId}
         />
       </Suspense>
     </div>

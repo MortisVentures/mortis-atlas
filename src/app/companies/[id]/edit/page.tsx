@@ -1,17 +1,29 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getCompanyById } from "@/lib/db";
 import { CompanyForm } from "@/components/companies/company-form";
+import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function EditCompanyPage({ params }: PageProps) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+
   const { id } = await params;
   const company = await getCompanyById(id);
 
   if (!company) {
+    notFound();
+  }
+
+  // Verify ownership
+  if (company.userId !== session.user.id) {
     notFound();
   }
 

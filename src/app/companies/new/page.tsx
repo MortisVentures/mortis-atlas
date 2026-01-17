@@ -1,7 +1,14 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CompanyForm } from "@/components/companies/company-form";
+import { auth } from "@/lib/auth";
 
-export default function NewCompanyPage() {
+export default async function NewCompanyPage() {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       {/* Header */}

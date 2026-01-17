@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { CompanyStage } from "@prisma/client";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
 
 // Validation schema
 const companySchema = z.object({
@@ -20,29 +21,13 @@ const companySchema = z.object({
   notes: z.string().optional(),
 });
 
-// Temporary user ID until auth is implemented
-const TEMP_USER_ID = "temp-user-id";
-
-async function ensureTempUser() {
-  const user = await prisma.user.findUnique({
-    where: { id: TEMP_USER_ID },
-  });
-
-  if (!user) {
-    await prisma.user.create({
-      data: {
-        id: TEMP_USER_ID,
-        email: "temp@mortisatlas.com",
-        name: "Temp User",
-      },
-    });
-  }
-
-  return TEMP_USER_ID;
-}
-
 export async function createCompany(formData: FormData) {
-  const userId = await ensureTempUser();
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+  const userId = session.user.id;
 
   const rawData = {
     name: formData.get("name") as string,
@@ -80,6 +65,21 @@ export async function createCompany(formData: FormData) {
 }
 
 export async function updateCompany(id: string, formData: FormData) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+
+  // Verify ownership
+  const existing = await prisma.company.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+  if (!existing || existing.userId !== session.user.id) {
+    throw new Error("Not authorized to update this company");
+  }
+
   const rawData = {
     name: formData.get("name") as string,
     website: formData.get("website") as string,
@@ -117,6 +117,21 @@ export async function updateCompany(id: string, formData: FormData) {
 }
 
 export async function deleteCompany(id: string) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+
+  // Verify ownership
+  const existing = await prisma.company.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+  if (!existing || existing.userId !== session.user.id) {
+    throw new Error("Not authorized to delete this company");
+  }
+
   await prisma.company.delete({
     where: { id },
   });

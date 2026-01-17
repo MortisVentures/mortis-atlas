@@ -7,11 +7,12 @@ import {
 import { updateCompanySchema } from "@/lib/validations/company";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
+import { auth } from "@/lib/auth";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -20,7 +21,13 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -35,6 +42,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Company not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify ownership
+    if (company.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Not authorized to access this company" },
+        { status: 403 }
       );
     }
 
@@ -54,7 +69,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -74,6 +95,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Company not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify ownership
+    if (existing.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Not authorized to update this company" },
+        { status: 403 }
       );
     }
 
@@ -131,7 +160,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -146,6 +181,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         { error: "Company not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify ownership
+    if (existing.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Not authorized to delete this company" },
+        { status: 403 }
       );
     }
 

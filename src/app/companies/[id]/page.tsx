@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getCompanyWithFullDetails } from "@/lib/db/companies";
 import { CompanyDetailView, type CompanyDetailData } from "@/components/companies/company-detail-view";
+import { auth } from "@/lib/auth";
 
 // =============================================================================
 // SERVER COMPONENT - DATA FETCHING
@@ -11,6 +12,12 @@ interface PageProps {
 }
 
 export default async function CompanyDetailPage({ params }: PageProps) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+
   const { id } = await params;
 
   // Fetch company data from Prisma
@@ -18,6 +25,11 @@ export default async function CompanyDetailPage({ params }: PageProps) {
 
   if (!company) {
     notFound();
+  }
+
+  // Verify ownership
+  if (company.userId !== session.user.id) {
+    notFound(); // Don't reveal that the company exists
   }
 
   // Map Prisma data to the component's expected format

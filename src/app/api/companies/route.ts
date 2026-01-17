@@ -6,9 +6,7 @@ import {
 } from "@/lib/validations/company";
 import { ZodError } from "zod";
 import { CompanyStage } from "@prisma/client";
-
-// Temporary user ID until auth is implemented
-const TEMP_USER_ID = "temp-user-id";
+import { auth } from "@/lib/auth";
 
 /**
  * GET /api/companies
@@ -16,6 +14,12 @@ const TEMP_USER_ID = "temp-user-id";
  */
 export async function GET(request: NextRequest) {
   try {
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
 
     // Parse and validate query parameters
@@ -33,7 +37,7 @@ export async function GET(request: NextRequest) {
         stage: query.stage as CompanyStage | undefined,
         sector: query.sector,
         search: query.search,
-        userId: TEMP_USER_ID,
+        userId: session.user.id,
       },
       {
         page: query.page,
@@ -67,6 +71,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate request body
@@ -88,7 +98,7 @@ export async function POST(request: NextRequest) {
       twitterHandle: validated.twitterHandle || null,
       logoUrl: validated.logoUrl || null,
       notes: validated.notes || null,
-      userId: TEMP_USER_ID,
+      userId: session.user.id,
     };
 
     // Create company
