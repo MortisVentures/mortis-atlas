@@ -1,5 +1,6 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 // Routes that don't require authentication
 const publicRoutes = [
@@ -8,47 +9,56 @@ const publicRoutes = [
   "/auth/register",
   "/auth/error",
   "/auth/forgot-password",
-  "/api/auth",
 ];
 
-// Routes that require specific roles (extend as needed)
-const roleRoutes: Record<string, string[]> = {
-  "/admin": ["ADMIN"],
-  "/lp": ["LP", "ADMIN"], // LPs and admins can access LP portal
-};
+// API routes that don't require authentication
+const publicApiRoutes = [
+  "/api/auth",
+  "/api/debug",
+];
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const token = req.nextauth.token;
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-    // Check role-specific routes
-    for (const [route, allowedRoles] of Object.entries(roleRoutes)) {
-      if (pathname.startsWith(route)) {
-        if (!token?.role || !allowedRoles.includes(token.role as string)) {
-          return NextResponse.redirect(new URL("/unauthorized", req.url));
-        }
+  // Allow public routes
+  if (publicRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
+    return NextResponse.next();
+  }
+
+  // Allow public API routes
+  if (publicApiRoutes.some((route) => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // Check for auth token
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  // Redirect to login if no token
+  if (!token) {
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Role-based route protection
+  const roleRoutes: Record<string, string[]> = {
+    "/admin": ["ADMIN"],
+    "/lp": ["LP", "ADMIN"],
+  };
+
+  for (const [route, allowedRoles] of Object.entries(roleRoutes)) {
+    if (pathname.startsWith(route)) {
+      if (!token.role || !allowedRoles.includes(token.role as string)) {
+        return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
     }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-
-        // Allow public routes
-        if (publicRoutes.some((route) => pathname.startsWith(route))) {
-          return true;
-        }
-
-        // All other routes require authentication
-        return !!token;
-      },
-    },
   }
-);
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
