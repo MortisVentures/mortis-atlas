@@ -6,12 +6,12 @@
 |-------|--------|-------------|
 | Phase 1 - Foundation | ✅ Complete | Next.js 14, Prisma, Supabase, shadcn/ui |
 | Phase 2 - UI Foundation | ✅ Complete | All pages and components built |
-| Phase 3 - Authentication | 🔴 Not Started | NextAuth.js flows |
+| Phase 3 - Authentication | ✅ Complete | NextAuth.js + RBAC schema |
 | Phase 4 - CRUD Operations | 🟡 Partial | API routes exist, need wiring |
 | Phase 5 - Testing | 🔴 Not Started | Integration and E2E tests |
 | Phase 6 - Polish | 🔴 Not Started | UI refinements |
 
-**Operational Readiness: ~35%** - UI built, needs auth + functional CRUD
+**Operational Readiness: ~45%** - Auth complete, needs functional CRUD
 
 ---
 
@@ -26,24 +26,30 @@
 
 ---
 
-## Phase 3: Authentication (NEXT)
+## Phase 3: Authentication ✅ COMPLETE
 
-### Objective
-Enable solo user login to secure the CRM data.
+### Implemented
+- [x] NextAuth.js v4 with credentials provider (email/password)
+- [x] Google OAuth ready (via env vars)
+- [x] Login/register pages at /auth/login, /auth/register
+- [x] Middleware route protection
+- [x] RBAC schema: UserRole (ADMIN, PARTNER, ANALYST, LP)
+- [x] LPProfile model for LP-specific data
+- [x] AuditLog model for action tracking
+- [x] Permission helpers in src/lib/auth/rbac.ts
+- [x] RoleGate component for conditional UI
 
-### Tasks
-- [ ] Configure NextAuth.js with credentials provider (email/password)
-- [ ] Add Google OAuth as secondary option
-- [ ] Create login/register pages
-- [ ] Implement session middleware
-- [ ] Protect all routes except landing page
-- [ ] Add user context to all database operations
+### Key Files
+```
+src/lib/auth/config.ts       # NextAuth configuration
+src/lib/auth/rbac.ts         # Permission helpers
+src/middleware.ts            # Route protection
+src/app/auth/login/page.tsx  # Login page
+src/app/auth/register/page.tsx # Registration page
+```
 
-### Architecture Notes (for future team use)
-- Schema already has User model with proper relations
-- Design auth to support multiple users from start
-- Add `userId` filtering to all queries now
-- Prepare for role-based access (OWNER, MEMBER, VIEWER) later
+### First User = ADMIN
+The first registered user automatically becomes ADMIN. All subsequent users default to ANALYST.
 
 ---
 
@@ -144,7 +150,7 @@ Refine user experience for daily use.
 | Database | PostgreSQL (Supabase) |
 | ORM | Prisma v7.2.0 |
 | UI | shadcn/ui + Radix primitives |
-| Auth | NextAuth.js (to implement) |
+| Auth | NextAuth.js v4 (credentials + OAuth) |
 | State | TanStack React Query v5 |
 | Validation | Zod |
 | Package Manager | pnpm |
@@ -154,12 +160,17 @@ Refine user experience for daily use.
 ## Database Schema Summary
 
 ### Core Models
-- **User** - Auth with NextAuth (Account, Session, VerificationToken)
+- **User** - Auth with NextAuth + RBAC (role, isActive, lastLoginAt)
 - **Company** - Investment targets with 7-stage pipeline
 - **Contact** - People with company relationships
 - **Deal** - Investment tracking with 8-stage flow
 - **Activity** - Polymorphic interaction logging
 - **Tag/CompanyTag** - Flexible categorization
+
+### RBAC Models
+- **UserRole** - ADMIN, PARTNER, ANALYST, LP
+- **LPProfile** - LP-specific data (commitment, called capital, distributions)
+- **AuditLog** - Action tracking with entity references
 
 ### Document System (ready, not active)
 - **Document** - Files with versioning
@@ -174,6 +185,16 @@ Refine user experience for daily use.
 ---
 
 ## Key Files Reference
+
+### Authentication
+```
+src/lib/auth/config.ts              # NextAuth configuration
+src/lib/auth/index.ts               # Auth exports (auth(), getCurrentUser())
+src/lib/auth/rbac.ts                # RBAC permissions
+src/middleware.ts                   # Route protection
+src/app/api/auth/[...nextauth]/route.ts # NextAuth handler
+src/app/api/auth/register/route.ts  # User registration
+```
 
 ### API Routes
 ```
