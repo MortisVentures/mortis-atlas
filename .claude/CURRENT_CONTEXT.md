@@ -1,6 +1,6 @@
 # Mortis Atlas - Current Development Context
 
-**Last Updated:** 2026-01-16
+**Last Updated:** 2026-01-17
 **Session Status:** Active Development
 
 ---
@@ -150,16 +150,32 @@ src/
 - Documented architecture decisions in DECISIONS.md
 - Set up PHASE_TRACKER.md for milestone management
 
-### Phase 1: Core CRM Fixes 🔄 NEXT
-**Priority Items:**
-- [ ] Fix contact 404 errors (navigation inconsistency)
-- [ ] Resolve company intake build failures
-- [ ] Integrate source attribution into main deal flow (currently isolated)
+### Phase 1A: Contact Detail Page ✅ COMPLETE
+- Created dynamic route `/contacts/[id]/page.tsx`
+- Implemented API endpoint `/api/contacts/[id]/route.ts`
+- Added error handling for invalid contact IDs (404)
+- Included placeholder for Phase 2 referral tracking
+- Navigation: list → detail → back works
 
-### Current State Gaps Identified
-1. **Navigation Inconsistency**: Contact pages may return 404
-2. **Source Attribution Isolation**: 15 deals tracked ($20.8M invested) but not linked to main pipeline
-3. **Company Intake**: Build failures need resolution
+### Phase 1B: Company Intake ✅ COMPLETE
+- Fixed company intake build error
+- Reorganized routes with (view) group
+- Add Company form now functional
+- Keyboard shortcut ⌘N works
+
+### Phase 1C: Unified Sidebar Navigation ✅ COMPLETE
+- Updated sidebar navigation to include Deal Sources and Contacts links
+- Applied DashboardLayout to Companies page (was using minimal Navbar)
+- Applied DashboardLayout to Documents page
+- Applied DashboardLayout to Deals page
+- Applied DashboardLayout to (dashboard) route group
+- Sidebar features: collapsible, localStorage persistence, active page highlighting
+
+### Phase 1D: Documents Sidebar 🔄 NEXT
+- Verify Documents page sidebar works correctly
+
+### Remaining Gaps
+1. **Source Attribution Isolation**: 15 deals tracked ($20.8M invested) but not linked to main pipeline
 
 ---
 
