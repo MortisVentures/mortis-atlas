@@ -10,7 +10,7 @@ datasource db {
 }
 
 // ============================================
-// NextAuth.js Models
+// NextAuth.js Models + RBAC
 // ============================================
 
 model User {
@@ -19,6 +19,12 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  password      String?   // Hashed password for credentials auth
+
+  // RBAC
+  role          UserRole  @default(ANALYST)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
 
   // Relations
   accounts      Account[]
@@ -37,8 +43,25 @@ model User {
   icMemos       ICMemo[]
   icMemoVotes   ICMemoVote[]
 
+  // LP Profile (only for LP role users)
+  lpProfile     LPProfile?
+
+  // Audit trail
+  auditLogs     AuditLog[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([role])
+  @@index([email])
+}
+
+// User roles for RBAC
+enum UserRole {
+  ADMIN         // Full system access, user management
+  PARTNER       // Investment decisions, full deal access, LP data access
+  ANALYST       // Deal execution, limited LP data access
+  LP            // Read-only portfolio access, own capital account only
 }
 
 model Account {
@@ -523,4 +546,101 @@ enum VoteType {
   YES
   NO
   ABSTAIN
+}
+
+// ============================================
+// RBAC & LP Management Models
+// ============================================
+
+model LPProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // LP Information
+  entityName        String?          // Legal entity name if different from user name
+  entityType        String?          // Individual, Trust, LLC, etc.
+
+  // Capital account information
+  commitmentAmount  Decimal  @db.Decimal(15, 2)
+  calledCapital     Decimal  @db.Decimal(15, 2) @default(0)
+  distributions     Decimal  @db.Decimal(15, 2) @default(0)
+
+  // Access control - for multi-fund scenarios
+  fundAccess        String[] // Array of fund IDs LP can access
+
+  // Contact preferences
+  quarterlyReportsEmail  Boolean @default(true)
+  capitalCallsEmail      Boolean @default(true)
+  taxDocumentsEmail      Boolean @default(true)
+
+  // Administrative
+  accreditedInvestor     Boolean @default(false)
+  kycVerified            Boolean @default(false)
+  kycVerifiedAt          DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ============================================
+// Audit Logging
+// ============================================
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // What happened
+  action      AuditAction
+  entityType  String      // "Company", "Deal", "LP", "User", etc.
+  entityId    String?     // ID of the affected entity
+
+  // Details
+  description String?     // Human-readable description
+  changes     Json?       // Store before/after values for updates
+  metadata    Json?       // Additional context (filters used, export format, etc.)
+
+  // Request context
+  ipAddress   String?
+  userAgent   String?
+  requestPath String?     // API route or page path
+
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  // Authentication
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+
+  // CRUD operations
+  CREATE
+  READ
+  UPDATE
+  DELETE
+
+  // Document operations
+  VIEW
+  DOWNLOAD
+  UPLOAD
+  SHARE
+
+  // Export operations
+  EXPORT
+
+  // Administrative
+  ROLE_CHANGE
+  PERMISSION_CHANGE
+  USER_INVITE
+  USER_DEACTIVATE
 }

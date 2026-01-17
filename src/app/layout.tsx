@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import { CommandPaletteProvider } from "@/components/layout/command-palette";
+import { SessionProvider } from "@/components/providers/session-provider";
 
 // Inter font imports (all weights for body and display)
 import "@fontsource/inter/400.css";
@@ -41,10 +42,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className="font-body antialiased bg-background text-foreground min-h-screen">
-        <CommandPaletteProvider>
-          {children}
-        </CommandPaletteProvider>
-        <Toaster richColors position="top-right" />
+        <SessionProvider>
+          <CommandPaletteProvider>
+            {children}
+          </CommandPaletteProvider>
+          <Toaster richColors position="top-right" />
+        </SessionProvider>
       </body>
     </html>
   );
