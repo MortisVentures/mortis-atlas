@@ -28,6 +28,15 @@ model User {
   deals         Deal[]
   activities    Activity[]
 
+  // Document relations
+  documents         Document[]
+  documentVersions  DocumentVersion[]
+  documentAccessLogs DocumentAccessLog[]
+
+  // IC Memo relations
+  icMemos       ICMemo[]
+  icMemoVotes   ICMemoVote[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -85,7 +94,11 @@ model Company {
   location        String?
   foundedYear     Int?
   employeeCount   String?       // e.g., "1-10", "11-50", "51-200"
+  fundingRound    String?       // e.g., "Seed", "Series A", "Series B"
+  fundingAmount   Decimal?      @db.Decimal(15, 2) // Total funding raised
+  valuation       Decimal?      @db.Decimal(15, 2) // Current/latest company valuation
   linkedinUrl     String?
+  twitterHandle   String?       // e.g., "@companyname"
   logoUrl         String?
   notes           String?       @db.Text
 
@@ -98,6 +111,8 @@ model Company {
   deals           Deal[]
   activities      Activity[]
   tags            CompanyTag[]
+  documents       Document[]
+  icMemos         ICMemo[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -175,6 +190,8 @@ model Deal {
 
   // Relations
   activities      Activity[]
+  documents       Document[]
+  icMemos         ICMemo[]
 
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
@@ -255,6 +272,7 @@ model Tag {
 
   // Relations
   companies       CompanyTag[]
+  documents       DocumentTag[]
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -274,4 +292,235 @@ model CompanyTag {
   @@id([companyId, tagId])
   @@index([companyId])
   @@index([tagId])
+}
+
+// ============================================
+// Document Management Models
+// ============================================
+
+model Document {
+  id              String           @id @default(cuid())
+  name            String           // Display name
+  originalName    String           // Original file name
+  description     String?          @db.Text
+  documentType    DocumentType     @default(REFERENCE)
+  accessLevel     AccessLevel      @default(TEAM)
+
+  // File info
+  fileUrl         String           // Supabase storage URL
+  fileType        String           // pdf, xlsx, docx, pptx, png, jpg
+  fileSize        Int              // Size in bytes
+  mimeType        String           // MIME type
+
+  // Storage info
+  storagePath     String           // Full path in Supabase storage
+  bucketName      String           @default("documents")
+
+  // Version control
+  currentVersion  Int              @default(1)
+
+  // Relations - polymorphic (can be linked to company, deal, or IC memo)
+  companyId       String?
+  company         Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  dealId          String?
+  deal            Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  icMemoId        String?
+  icMemo          ICMemo?          @relation(fields: [icMemoId], references: [id], onDelete: SetNull)
+
+  // Ownership
+  uploadedById    String
+  uploadedBy      User             @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  // Sharing
+  shareLink       String?          // Signed URL for sharing
+  shareLinkExpiry DateTime?        // Expiration for share link
+
+  // Activity tracking
+  viewCount       Int              @default(0)
+  downloadCount   Int              @default(0)
+  lastViewedAt    DateTime?
+
+  // Relations
+  versions        DocumentVersion[]
+  accessLogs      DocumentAccessLog[]
+  tags            DocumentTag[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([uploadedById])
+  @@index([companyId])
+  @@index([dealId])
+  @@index([icMemoId])
+  @@index([documentType])
+  @@index([accessLevel])
+  @@index([createdAt])
+  @@index([name])
+}
+
+enum DocumentType {
+  PITCH_DECK        // Company presentation and pitch materials
+  FINANCIAL_MODEL   // Financial projections and models
+  IC_MEMO           // Investment committee memos
+  TERM_SHEET        // Investment term sheets
+  DD_REPORT         // Due diligence reports
+  BOARD_NOTES       // Board meeting notes
+  LEGAL             // Legal agreements and contracts
+  REFERENCE         // Reference materials and other documents
+}
+
+enum AccessLevel {
+  PRIVATE           // Uploader only
+  TEAM              // All fund members
+  IC_MEMBERS        // IC members only
+  LP_ACCESSIBLE     // LPs can view
+}
+
+model DocumentVersion {
+  id              String       @id @default(cuid())
+  versionNumber   Int
+  fileUrl         String       // URL to this version's file
+  fileSize        Int          // Size in bytes
+  changeNotes     String?      @db.Text
+
+  // Document relationship
+  documentId      String
+  document        Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Uploader
+  uploadedById    String
+  uploadedBy      User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime     @default(now())
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+  @@index([uploadedById])
+}
+
+model DocumentAccessLog {
+  id              String             @id @default(cuid())
+  action          DocumentAction
+  ipAddress       String?
+  userAgent       String?
+
+  // Document relationship
+  documentId      String
+  document        Document           @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // User who accessed
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime           @default(now())
+
+  @@index([documentId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum DocumentAction {
+  VIEW
+  DOWNLOAD
+  SHARE
+  EDIT
+  DELETE
+}
+
+model DocumentTag {
+  documentId      String
+  document        Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  tagId           String
+  tag             Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  assignedAt      DateTime     @default(now())
+
+  @@id([documentId, tagId])
+  @@index([documentId])
+  @@index([tagId])
+}
+
+// ============================================
+// IC Memo Model (for Document references)
+// ============================================
+
+model ICMemo {
+  id              String           @id @default(cuid())
+  title           String
+  status          ICMemoStatus     @default(DRAFT)
+  recommendation  String?          // INVEST, PASS, MORE_INFO
+  requestedAmount Decimal?         @db.Decimal(15, 2)
+  proposedTerms   String?          @db.Text
+
+  // Company relationship
+  companyId       String
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Deal relationship (optional)
+  dealId          String?
+  deal            Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  // Author
+  authorId        String
+  author          User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Content sections stored as JSON
+  content         Json?            // Structured content for sections
+
+  // Voting
+  votingDeadline  DateTime?
+  votes           ICMemoVote[]
+
+  // Relations
+  documents       Document[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  submittedAt     DateTime?        // When submitted for review
+
+  @@index([authorId])
+  @@index([companyId])
+  @@index([dealId])
+  @@index([status])
+}
+
+enum ICMemoStatus {
+  DRAFT             // Being written
+  SUBMITTED         // Submitted for review
+  UNDER_REVIEW      // Being reviewed by IC
+  PENDING_VOTE      // Voting in progress
+  APPROVED          // Approved by IC
+  REJECTED          // Rejected by IC
+  WITHDRAWN         // Withdrawn by author
+}
+
+model ICMemoVote {
+  id              String           @id @default(cuid())
+  vote            VoteType
+  comment         String?          @db.Text
+
+  // IC Memo relationship
+  icMemoId        String
+  icMemo          ICMemo           @relation(fields: [icMemoId], references: [id], onDelete: Cascade)
+
+  // Voter
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([icMemoId, userId])
+  @@index([icMemoId])
+  @@index([userId])
+}
+
+enum VoteType {
+  YES
+  NO
+  ABSTAIN
 }

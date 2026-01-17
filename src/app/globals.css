@@ -1,53 +1,368 @@
+/* =============================================================================
+   MORTIS ATLAS DESIGN SYSTEM
+   ============================================================================= */
+
+/* Fonts are imported in layout.tsx via @fontsource */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-
+/* =============================================================================
+   BASE LAYER - CSS Variables & Resets
+   ============================================================================= */
 
 @layer base {
   /* Mortis Atlas Brand Colors - Dark Mode First */
   :root {
-    --background: 0 0% 0%;              /* Pure black */
-    --foreground: 0 0% 95%;             /* Off-white text */
-    --card: 0 0% 5%;                    /* Slightly lighter black */
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 170 100% 50%;            /* Cyan - center of gradient */
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 12%;              /* Dark gray */
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 270 91% 65%;              /* Purple accent */
-    --accent-foreground: 0 0% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
-    --border: 0 0% 15%;                 /* Subtle dark border */
-    --input: 0 0% 12%;
-    --ring: 170 100% 50%;               /* Cyan ring */
-    --chart-1: 100 100% 65%;            /* Green */
-    --chart-2: 170 100% 50%;            /* Cyan */
-    --chart-3: 200 100% 55%;            /* Blue */
-    --chart-4: 270 91% 65%;             /* Purple */
-    --chart-5: 310 80% 60%;             /* Magenta */
-    --radius: 0.5rem;
+    /* Font Family Variables */
+    --font-display: 'InterVariable', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    /* Core Theme */
+    --background: 222 47% 6%;           /* Navy-950: #0F172A */
+    --foreground: 210 40% 98%;          /* Slate-50 */
+
+    /* Card/Surface */
+    --card: 217 33% 12%;                /* Navy-900 variant */
+    --card-foreground: 210 40% 98%;
+
+    /* Popover */
+    --popover: 217 33% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary - Navy */
+    --primary: 217 91% 60%;             /* Navy-500: #3B82F6 */
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary */
+    --secondary: 217 33% 17%;           /* Navy-800 variant */
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent - Tactical Green */
+    --accent: 160 84% 39%;              /* Tactical-600: #059669 */
+    --accent-foreground: 210 40% 98%;
+
+    /* Destructive */
+    --destructive: 0 72% 51%;           /* Red-600 */
+    --destructive-foreground: 210 40% 98%;
+
+    /* Border */
+    --border: 217 33% 20%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
+
+    /* Chart Colors - VC Optimized */
+    --chart-1: 160 84% 39%;             /* Tactical Green */
+    --chart-2: 217 91% 60%;             /* Navy Blue */
+    --chart-3: 189 94% 43%;             /* Cyan */
+    --chart-4: 45 93% 47%;              /* Amber */
+    --chart-5: 280 67% 59%;             /* Purple */
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Mortis Atlas Custom Properties */
+    --atlas-navy: #1E3A8A;
+    --atlas-silver: #94A3B8;
+    --atlas-tactical: #10B981;
+
+    /* Neumorphic Shadow Variables */
+    --neu-shadow-light: rgba(255, 255, 255, 0.03);
+    --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+    --neu-glow-primary: rgba(59, 130, 246, 0.1);
+    --neu-glow-tactical: rgba(16, 185, 129, 0.15);
+  }
+
+  /* Light Mode Override */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 6%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 6%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 6%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 6%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+
+    /* Light mode neumorphic */
+    --neu-shadow-light: rgba(255, 255, 255, 0.8);
+    --neu-shadow-dark: rgba(0, 0, 0, 0.1);
+    --neu-glow-primary: rgba(59, 130, 246, 0.15);
   }
 }
 
-
-
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border;
   }
+
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Focus visible styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Selection styles */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+/* =============================================================================
+   UTILITIES LAYER - Custom Utility Classes
+   ============================================================================= */
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-tactical-400 via-primary to-navy-400 bg-clip-text text-transparent;
+  }
+
+  /* Neumorphic Card Utilities */
+  .neu-card {
+    @apply relative rounded-atlas-md transition-shadow duration-base;
+    box-shadow:
+      8px 8px 16px var(--neu-shadow-dark),
+      -8px -8px 16px var(--neu-shadow-light),
+      0 0 20px var(--neu-glow-primary);
+  }
+
+  .neu-card-hover:hover {
+    box-shadow:
+      12px 12px 24px var(--neu-shadow-dark),
+      -12px -12px 24px var(--neu-shadow-light),
+      0 0 30px var(--neu-glow-primary);
+  }
+
+  .neu-card-pressed {
+    box-shadow:
+      inset 2px 2px 5px var(--neu-shadow-dark),
+      inset -2px -2px 5px var(--neu-shadow-light);
+  }
+
+  .neu-card-subtle {
+    box-shadow:
+      4px 4px 8px var(--neu-shadow-dark),
+      -4px -4px 8px var(--neu-shadow-light);
+  }
+
+  /* Glow utilities */
+  .glow-tactical {
+    box-shadow: 0 0 20px var(--neu-glow-tactical);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px var(--neu-glow-primary);
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply backdrop-blur-md bg-background/80 border border-border/50;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-lg bg-card/90 border border-border/30;
+  }
+
+  /* Data/Metric styling */
+  .metric-value {
+    @apply font-mono text-2xl font-semibold tracking-tight;
+  }
+
+  .metric-label {
+    @apply text-sm text-muted-foreground font-medium uppercase tracking-wider;
+  }
+
+  /* Pipeline stage badge base */
+  .stage-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground));
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animation utilities */
+  .animate-in-view {
+    @apply opacity-0 translate-y-4;
+  }
+
+  .animate-in-view.in-view {
+    @apply opacity-100 translate-y-0 transition-all duration-slow ease-spring;
+  }
+}
+
+/* =============================================================================
+   COMPONENTS LAYER - Reusable Component Styles
+   ============================================================================= */
+
+@layer components {
+  /* Neumorphic Button Base */
+  .btn-neu {
+    @apply relative inline-flex items-center justify-center px-4 py-2 rounded-atlas-sm font-medium transition-all duration-base;
+    box-shadow:
+      4px 4px 8px var(--neu-shadow-dark),
+      -4px -4px 8px var(--neu-shadow-light);
+  }
+
+  .btn-neu:hover {
+    box-shadow:
+      6px 6px 12px var(--neu-shadow-dark),
+      -6px -6px 12px var(--neu-shadow-light);
+  }
+
+  .btn-neu:active {
+    box-shadow:
+      inset 2px 2px 4px var(--neu-shadow-dark),
+      inset -2px -2px 4px var(--neu-shadow-light);
+  }
+
+  /* Sidebar Navigation Item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-atlas-sm text-muted-foreground transition-all duration-fast;
+  }
+
+  .nav-item:hover {
+    @apply bg-muted text-foreground;
+  }
+
+  .nav-item.active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  /* Data Table Row */
+  .table-row-interactive {
+    @apply transition-colors duration-fast hover:bg-muted/50 cursor-pointer;
+  }
+
+  /* Card header with Bloomberg-style density */
+  .card-header-dense {
+    @apply flex items-center justify-between px-4 py-3 border-b border-border;
+  }
+
+  /* Stat card for dashboard */
+  .stat-card {
+    @apply neu-card p-4 space-y-2;
+  }
+
+  .stat-card-value {
+    @apply metric-value text-foreground;
+  }
+
+  .stat-card-label {
+    @apply metric-label;
+  }
+
+  .stat-card-change {
+    @apply text-sm font-medium;
+  }
+
+  .stat-card-change.positive {
+    @apply text-tactical-500;
+  }
+
+  .stat-card-change.negative {
+    @apply text-danger-base;
+  }
+}
+
+/* =============================================================================
+   TREMOR CHART OVERRIDES
+   ============================================================================= */
+
+/* Tremor base styles adapted to Mortis Atlas theme */
+.tremor-base {
+  --tremor-brand: theme('colors.primary.DEFAULT');
+  --tremor-brand-emphasis: theme('colors.navy.600');
+  --tremor-brand-subtle: theme('colors.navy.900');
+  --tremor-brand-inverted: theme('colors.white');
+
+  --tremor-background: theme('colors.card.DEFAULT');
+  --tremor-background-emphasis: theme('colors.muted.DEFAULT');
+  --tremor-background-subtle: theme('colors.background');
+
+  --tremor-content: theme('colors.foreground');
+  --tremor-content-emphasis: theme('colors.foreground');
+  --tremor-content-subtle: theme('colors.muted.foreground');
+  --tremor-content-inverted: theme('colors.background');
+
+  --tremor-border: theme('colors.border');
+  --tremor-ring: theme('colors.ring');
+}
+
+/* Tremor chart text */
+[data-tremor-chart] text {
+  @apply fill-muted-foreground;
+}
+
+/* Tremor legend */
+.tremor-Legend-legendItem {
+  @apply text-sm;
 }

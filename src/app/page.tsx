@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
@@ -8,7 +9,7 @@ export default function Home() {
         {/* Logo */}
         <div className="relative h-24 w-24 sm:h-32 sm:w-32">
           <Image
-            src="/logo.png"
+            src="/Logo.png"
             alt="Mortis Atlas"
             fill
             className="object-contain"
@@ -36,9 +37,11 @@ export default function Home() {
 
         {/* CTA Button */}
         <div className="mt-4">
-          <Button size="lg" className="px-8">
-            Get Started
-          </Button>
+          <Link href="/dashboard">
+            <Button size="lg" className="px-8">
+              Go to Dashboard
+            </Button>
+          </Link>
         </div>
 
         {/* Footer accent */}
