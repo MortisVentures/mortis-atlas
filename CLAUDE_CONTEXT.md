@@ -7,11 +7,11 @@
 | Phase 1 - Foundation | ✅ Complete | Next.js 14, Prisma, Supabase, shadcn/ui |
 | Phase 2 - UI Foundation | ✅ Complete | All pages and components built |
 | Phase 3 - Authentication | ✅ Complete | NextAuth.js + RBAC schema |
-| Phase 4 - CRUD Operations | 🟡 Partial | API routes exist, need wiring |
+| Phase 4 - CRUD Operations | 🟡 In Progress | Companies complete, others pending |
 | Phase 5 - Testing | 🔴 Not Started | Integration and E2E tests |
 | Phase 6 - Polish | 🔴 Not Started | UI refinements |
 
-**Operational Readiness: ~45%** - Auth complete, needs functional CRUD
+**Operational Readiness: ~55%** - Auth + Companies CRUD complete
 
 ---
 
@@ -58,12 +58,12 @@ The first registered user automatically becomes ADMIN. All subsequent users defa
 ### Objective
 Make all pages functional with real database operations.
 
-### Companies (Priority 1 - Core to angel tracking)
-- [ ] List: Fetch with filters, search, pagination
-- [ ] Create: Form validation, save to DB
-- [ ] Read: Detail page with related data
-- [ ] Update: Edit form with optimistic updates
-- [ ] Delete: Soft delete with confirmation
+### Companies (Priority 1 - Core to angel tracking) ✅ COMPLETE
+- [x] List: Fetch with filters, search, pagination (auth-protected)
+- [x] Create: Form validation, save to DB (with userId)
+- [x] Read: Detail page with related data (ownership verification)
+- [x] Update: Edit form with auth + ownership checks
+- [x] Delete: With confirmation + ownership verification
 
 ### Contacts (Priority 2 - Relationship tracking)
 - [ ] CRUD operations linked to companies
@@ -253,4 +253,4 @@ pnpm dlx prisma studio      # Open Prisma Studio
 
 ---
 
-Last updated: January 17, 2026
+Last updated: January 17, 2026 (Phase 4 - Companies CRUD complete)
