@@ -42,6 +42,7 @@ import {
 import { Badge, StageBadge, BadgeGroup } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AddContactDialog } from "./add-contact-dialog";
 
 // =============================================================================
 // TYPES
@@ -575,7 +576,7 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
               <Card variant="raised">
                 <CardHeader layout="row" withBorder>
                   <CardTitle size="lg">Contacts</CardTitle>
-                  <Button size="sm" variant="outline"><PlusIcon className="size-4 mr-2" />Add Contact</Button>
+                  <AddContactDialog companyId={company.id} companyName={company.name} />
                 </CardHeader>
                 <CardContent padding="lg">
                   {company.contacts.length > 0 ? (
@@ -588,7 +589,17 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
                     <div className="text-center py-8 text-muted-foreground">
                       <EnvelopeClosedIcon className="size-8 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">No contacts added yet</p>
-                      <Button variant="outline" size="sm" className="mt-4"><PlusIcon className="size-4 mr-2" />Add First Contact</Button>
+                      <div className="mt-4">
+                        <AddContactDialog
+                          companyId={company.id}
+                          companyName={company.name}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <PlusIcon className="size-4 mr-2" />Add First Contact
+                            </Button>
+                          }
+                        />
+                      </div>
                     </div>
                   )}
                 </CardContent>
