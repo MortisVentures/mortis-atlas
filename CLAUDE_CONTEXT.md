@@ -7,11 +7,11 @@
 | Phase 1 - Foundation | ✅ Complete | Next.js 14, Prisma, Supabase, shadcn/ui |
 | Phase 2 - UI Foundation | ✅ Complete | All pages and components built |
 | Phase 3 - Authentication | ✅ Complete | NextAuth.js + RBAC schema |
-| Phase 4 - CRUD Operations | 🟡 In Progress | Companies complete, others pending |
+| Phase 4 - CRUD Operations | 🟡 In Progress | Companies + Contacts complete, Deals/Activities/Tasks pending |
 | Phase 5 - Testing | 🔴 Not Started | Integration and E2E tests |
 | Phase 6 - Polish | 🔴 Not Started | UI refinements |
 
-**Operational Readiness: ~55%** - Auth + Companies CRUD complete
+**Operational Readiness: ~65%** - Auth + Companies + Contacts CRUD complete
 
 ---
 
@@ -65,10 +65,12 @@ Make all pages functional with real database operations.
 - [x] Update: Edit form with auth + ownership checks
 - [x] Delete: With confirmation + ownership verification
 
-### Contacts (Priority 2 - Relationship tracking)
-- [ ] CRUD operations linked to companies
-- [ ] Primary contact designation
-- [ ] Contact activity history
+### Contacts (Priority 2 - Relationship tracking) ✅ COMPLETE
+- [x] CRUD operations linked to companies (auth-protected)
+- [x] Primary contact designation
+- [x] Contact list with search/filter
+- [x] Contact detail page with ownership verification
+- [x] Contact form with company dropdown
 
 ### Deals (Priority 3 - Pipeline tracking)
 - [ ] Deal creation from company
@@ -253,4 +255,4 @@ pnpm dlx prisma studio      # Open Prisma Studio
 
 ---
 
-Last updated: January 17, 2026 (Phase 4 - Companies CRUD complete)
+Last updated: January 17, 2026 (Phase 4 - Companies + Contacts CRUD complete)
