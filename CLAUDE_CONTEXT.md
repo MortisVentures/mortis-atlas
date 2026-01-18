@@ -71,6 +71,7 @@ Make all pages functional with real database operations.
 - [x] Contact list with search/filter
 - [x] Contact detail page with ownership verification
 - [x] Contact form with company dropdown
+- [x] Inline add contact dialog on company detail page
 
 ### Deals (Priority 3 - Pipeline tracking)
 - [ ] Deal creation from company
@@ -203,6 +204,8 @@ src/app/api/auth/register/route.ts  # User registration
 src/app/api/companies/route.ts      # GET (list), POST (create)
 src/app/api/companies/[id]/route.ts # GET, PUT, DELETE
 src/app/api/companies/stats/route.ts # Dashboard stats
+src/app/api/contacts/route.ts       # GET (list), POST (create)
+src/app/api/contacts/[id]/route.ts  # GET, PUT, DELETE
 ```
 
 ### Server Actions
@@ -255,4 +258,4 @@ pnpm dlx prisma studio      # Open Prisma Studio
 
 ---
 
-Last updated: January 17, 2026 (Phase 4 - Companies + Contacts CRUD complete)
+Last updated: January 18, 2026 (Phase 4 - Companies + Contacts CRUD complete with inline dialogs)
