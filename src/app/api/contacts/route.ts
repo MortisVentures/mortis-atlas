@@ -7,13 +7,13 @@ import { z } from "zod";
 const createContactSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().optional(),
-  role: z.string().optional(),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  notes: z.string().optional(),
-  isPrimary: z.boolean().optional(),
-  companyId: z.string().optional(),
+  email: z.string().email().nullish().or(z.literal("")),
+  phone: z.string().nullish(),
+  role: z.string().nullish(),
+  linkedinUrl: z.string().url().nullish().or(z.literal("")),
+  notes: z.string().nullish(),
+  isPrimary: z.boolean().nullish(),
+  companyId: z.string().nullish(),
 });
 
 /**
