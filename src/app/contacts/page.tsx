@@ -1,213 +1,203 @@
-"use client";
-
-import * as React from "react";
+import { Suspense } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  PersonIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
-  EnvelopeClosedIcon,
-} from "@radix-ui/react-icons";
-
-import {
-  DashboardLayout,
-  DashboardContent,
-  PageHeader,
-  PageSection,
-} from "@/components/layout";
-import { Card } from "@/components/ui/card";
+import { redirect } from "next/navigation";
+import { getContacts } from "@/lib/db/contacts";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
+import { ContactsFilters } from "@/components/contacts/contacts-filters";
 
-// =============================================================================
-// SAMPLE CONTACTS DATA
-// =============================================================================
-
-interface Contact {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string | null;
-  role: string | null;
-  company: { id: string; name: string } | null;
-  isPrimary: boolean;
+interface PageProps {
+  searchParams: Promise<{
+    search?: string;
+    companyId?: string;
+  }>;
 }
-
-const sampleContacts: Contact[] = [
-  {
-    id: "ct1",
-    firstName: "Sarah",
-    lastName: "Chen",
-    email: "sarah@techflow.ai",
-    role: "CEO",
-    company: { id: "c1", name: "TechFlow AI" },
-    isPrimary: true,
-  },
-  {
-    id: "ct2",
-    firstName: "Mike",
-    lastName: "Johnson",
-    email: "mike@datasync.io",
-    role: "CTO",
-    company: { id: "c2", name: "DataSync Pro" },
-    isPrimary: true,
-  },
-  {
-    id: "ct3",
-    firstName: "Emily",
-    lastName: "Davis",
-    email: "emily@quantumlabs.io",
-    role: "CFO",
-    company: { id: "c3", name: "Quantum Labs" },
-    isPrimary: false,
-  },
-  {
-    id: "ct4",
-    firstName: "Alex",
-    lastName: "Wong",
-    email: "alex@financeos.io",
-    role: "Founder",
-    company: { id: "c4", name: "FinanceOS" },
-    isPrimary: true,
-  },
-  {
-    id: "ct5",
-    firstName: "Jennifer",
-    lastName: "Lee",
-    email: "jennifer@healthbridge.com",
-    role: "CEO",
-    company: { id: "c5", name: "HealthBridge" },
-    isPrimary: true,
-  },
-  {
-    id: "ct6",
-    firstName: "David",
-    lastName: "Brown",
-    email: "david@cloudscale.io",
-    role: "VP Engineering",
-    company: { id: "c6", name: "CloudScale" },
-    isPrimary: false,
-  },
-];
 
 function getInitials(firstName: string, lastName: string): string {
-  return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  return `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase();
 }
 
-// =============================================================================
-// CONTACTS PAGE
-// =============================================================================
-
-export default function ContactsPage() {
-  const [searchQuery, setSearchQuery] = React.useState("");
-
-  const filteredContacts = sampleContacts.filter((contact) =>
-    `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.company?.name.toLowerCase().includes(searchQuery.toLowerCase())
+// Loading skeleton
+function ContactsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <Card key={i} className="bg-card/50 border-border">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-4">
+              <div className="size-12 rounded-full bg-muted animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-20 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
+}
+
+// Contacts grid component
+async function ContactsGrid({
+  search,
+  companyId,
+  userId,
+}: {
+  search?: string;
+  companyId?: string;
+  userId: string;
+}) {
+  const contacts = await getContacts({ userId, search, companyId });
+
+  if (contacts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-lg">
+        <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+          <svg
+            className="h-8 w-8 text-muted-foreground"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d={search || companyId
+                ? "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                : "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              }
+            />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium">
+          {search || companyId ? "No matching contacts" : "No contacts yet"}
+        </h3>
+        <p className="text-muted-foreground mt-1 mb-4 max-w-sm">
+          {search || companyId
+            ? "Try adjusting your search or filters to find what you're looking for"
+            : "Start building your network by adding your first contact"
+          }
+        </p>
+        {!search && !companyId && (
+          <Link href="/contacts/new">
+            <Button>Add Contact</Button>
+          </Link>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        <PageHeader
-          title="Contacts"
-          description="Manage your network of founders and partners"
-          breadcrumbs={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Contacts" },
-          ]}
-        />
-
-        {/* Contacts List */}
-        <PageSection
-          title={`All Contacts (${filteredContacts.length})`}
-          actions={
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search contacts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64"
-                />
-              </div>
-              <Link href="/contacts/new">
-                <Button>
-                  <PlusIcon className="size-4 mr-2" />
-                  Add Contact
-                </Button>
-              </Link>
-            </div>
-          }
-        >
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredContacts.map((contact, index) => (
-              <motion.div
-                key={contact.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <Link href={`/contacts/${contact.id}`}>
-                  <Card
-                    variant="raised"
-                    className={cn(
-                      "p-4 cursor-pointer h-full",
-                      "transition-all duration-200",
-                      "hover:scale-[1.02] hover:-translate-y-0.5",
-                      "hover:shadow-neu-dark-glow-navy"
-                    )}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex items-center justify-center size-12 rounded-full bg-gradient-to-br from-navy-600 to-navy-800 text-white font-semibold">
-                        {getInitials(contact.firstName, contact.lastName)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-foreground truncate">
-                            {contact.firstName} {contact.lastName}
-                          </h3>
-                          {contact.isPrimary && (
-                            <span className="px-2 py-0.5 text-xs bg-tactical-500/10 text-tactical-500 rounded-full">
-                              Primary
-                            </span>
-                          )}
-                        </div>
-                        {contact.role && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {contact.role}
-                          </p>
-                        )}
-                        {contact.company && (
-                          <p className="text-sm text-muted-foreground truncate mt-1">
-                            {contact.company.name}
-                          </p>
-                        )}
-                        {contact.email && (
-                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                            <EnvelopeClosedIcon className="size-3" />
-                            <span className="truncate">{contact.email}</span>
-                          </div>
-                        )}
-                      </div>
+    <>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {contacts.map((contact) => (
+          <Link key={contact.id} href={`/contacts/${contact.id}`}>
+            <Card className="bg-card/50 border-border hover:bg-card/80 transition-all cursor-pointer h-full">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex items-center justify-center size-12 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-white font-semibold shrink-0">
+                    {getInitials(contact.firstName, contact.lastName)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-foreground truncate">
+                        {contact.firstName} {contact.lastName}
+                      </h3>
+                      {contact.isPrimary && (
+                        <span className="px-2 py-0.5 text-xs bg-green-500/10 text-green-400 rounded-full shrink-0">
+                          Primary
+                        </span>
+                      )}
                     </div>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+                    {contact.role && (
+                      <p className="text-sm text-muted-foreground truncate">
+                        {contact.role}
+                      </p>
+                    )}
+                    {contact.company && (
+                      <p className="text-sm text-muted-foreground truncate mt-1">
+                        {contact.company.name}
+                      </p>
+                    )}
+                    {contact.email && (
+                      <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                        <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span className="truncate">{contact.email}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
-            {filteredContacts.length === 0 && (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                No contacts found matching your search.
-              </div>
-            )}
-          </div>
-        </PageSection>
-      </DashboardContent>
-    </DashboardLayout>
+      {/* Footer with count */}
+      <div className="mt-4 text-xs text-muted-foreground">
+        Showing {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
+        {(search || companyId) && " (filtered)"}
+      </div>
+    </>
+  );
+}
+
+export default async function ContactsPage({ searchParams }: PageProps) {
+  // Get authenticated user
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/login");
+  }
+  const userId = session.user.id;
+
+  const params = await searchParams;
+  const { search, companyId } = params;
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Contacts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your network of founders and partners
+          </p>
+        </div>
+        <Link href="/contacts/new">
+          <Button className="gap-2">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add Contact
+          </Button>
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6">
+        <ContactsFilters />
+      </div>
+
+      {/* Contacts Grid */}
+      <Suspense fallback={<ContactsSkeleton />}>
+        <ContactsGrid search={search} companyId={companyId} userId={userId} />
+      </Suspense>
+    </div>
   );
 }

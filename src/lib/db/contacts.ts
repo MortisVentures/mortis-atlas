@@ -275,3 +275,62 @@ export async function getContacts(
 
   return contacts as ContactWithRelations[];
 }
+
+// ============================================
+// Mutation Functions
+// ============================================
+
+export interface ContactInput {
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
+  linkedinUrl?: string | null;
+  notes?: string | null;
+  isPrimary?: boolean;
+  companyId?: string | null;
+  userId: string;
+}
+
+/**
+ * Create a new contact
+ */
+export async function createContact(data: ContactInput): Promise<Contact> {
+  return prisma.contact.create({
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email || null,
+      phone: data.phone || null,
+      role: data.role || null,
+      linkedinUrl: data.linkedinUrl || null,
+      notes: data.notes || null,
+      isPrimary: data.isPrimary ?? false,
+      companyId: data.companyId || null,
+      userId: data.userId,
+    },
+  });
+}
+
+/**
+ * Update an existing contact
+ */
+export async function updateContact(
+  id: string,
+  data: Partial<Omit<ContactInput, "userId">>
+): Promise<Contact> {
+  return prisma.contact.update({
+    where: { id },
+    data,
+  });
+}
+
+/**
+ * Delete a contact
+ */
+export async function deleteContact(id: string): Promise<Contact> {
+  return prisma.contact.delete({
+    where: { id },
+  });
+}
