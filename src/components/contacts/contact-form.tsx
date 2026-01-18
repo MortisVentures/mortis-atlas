@@ -103,11 +103,11 @@ export function ContactForm({
         : "/api/contacts";
       const method = isEditing ? "PUT" : "POST";
 
-      // Clean up empty strings to null
+      // Clean up empty strings and "none" to null
       const cleanedData = Object.fromEntries(
         Object.entries(data).map(([key, value]) => [
           key,
-          value === "" ? null : value,
+          value === "" || value === "none" ? null : value,
         ])
       );
 
@@ -290,7 +290,7 @@ export function ContactForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No company</SelectItem>
+                        <SelectItem value="none">No company</SelectItem>
                         {companies.map((company) => (
                           <SelectItem key={company.id} value={company.id}>
                             {company.name}
