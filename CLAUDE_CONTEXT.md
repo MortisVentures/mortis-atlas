@@ -73,10 +73,15 @@ Make all pages functional with real database operations.
 - [x] Contact form with company dropdown
 - [x] Inline add contact dialog on company detail page
 
-### Deals (Priority 3 - Pipeline tracking)
-- [ ] Deal creation from company
-- [ ] Stage progression workflow
-- [ ] Amount and valuation tracking
+### Deals (Priority 3 - Pipeline tracking) 🚧 IN PROGRESS
+- [ ] Schema extensions (priority, source, stage history, team members)
+- [ ] DealTeamMember model for deal collaboration
+- [ ] Pipeline utilities with stage configs and thresholds
+- [ ] Full API endpoints (GET/POST/PUT/DELETE)
+- [ ] Kanban board UI for visual pipeline management
+- [ ] Deal detail page with financials
+- [ ] Stage progression with history tracking
+- [ ] Source attribution integration
 
 ### Activities (Priority 4 - Interaction logging)
 - [ ] Quick-add from any context
