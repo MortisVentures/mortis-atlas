@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { CompanyStage } from "@prisma/client";
+import { CompanyStage, DealSource } from "@prisma/client";
 
 // Company stage enum values
 const companyStageValues = Object.values(CompanyStage) as [string, ...string[]];
+const dealSourceValues = Object.values(DealSource) as [string, ...string[]];
+
+// Sources that require a referrer
+const REFERRER_REQUIRED_SOURCES = ["REFERRAL", "PORTFOLIO", "INVESTOR_NETWORK"];
 
 // Funding round options
 export const FUNDING_ROUNDS = [
@@ -108,13 +112,38 @@ const companyBaseSchema = {
     .nullable()
     .or(z.literal("")),
   notes: z.string().max(10000).optional().nullable(),
+
+  // Source Attribution
+  sourceType: z.enum(dealSourceValues).optional().nullable(),
+  sourceChannel: z.string().max(255).optional().nullable(),
+  sourceDetail: z.string().max(1000).optional().nullable(),
+  referrerContactId: z.string().optional().nullable(),
+  referralDate: z.coerce.date().optional().nullable(),
 };
 
 // Schema for creating a company
-export const createCompanySchema = z.object({
-  ...companyBaseSchema,
-  name: z.string().min(1, "Company name is required").max(255),
-});
+export const createCompanySchema = z
+  .object({
+    ...companyBaseSchema,
+    name: z.string().min(1, "Company name is required").max(255),
+  })
+  .refine(
+    (data) => {
+      // If source type requires a referrer, referrerContactId must be provided
+      if (
+        data.sourceType &&
+        REFERRER_REQUIRED_SOURCES.includes(data.sourceType) &&
+        !data.referrerContactId
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Referrer is required for Referral, Portfolio Referral, or Co-Investor sources",
+      path: ["referrerContactId"],
+    }
+  );
 
 // Schema for updating a company (all fields optional)
 export const updateCompanySchema = z

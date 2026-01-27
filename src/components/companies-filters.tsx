@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { CompanyStage } from "@prisma/client";
+import { CompanyStage, DealSource } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
 const stageOptions: { value: CompanyStage | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Stages" },
@@ -24,11 +25,24 @@ const stageOptions: { value: CompanyStage | "ALL"; label: string }[] = [
   { value: "EXITED", label: "Exited" },
 ];
 
+const sourceConfig: Record<DealSource, { label: string; color: string }> = {
+  REFERRAL: { label: "Referral", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30" },
+  DIRECT_OUTREACH: { label: "Outreach", color: "bg-slate-500/20 text-slate-400 border-slate-500/30 hover:bg-slate-500/30" },
+  INBOUND: { label: "Inbound", color: "bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30" },
+  CONFERENCE: { label: "Conference", color: "bg-purple-500/20 text-purple-400 border-purple-500/30 hover:bg-purple-500/30" },
+  ACCELERATOR: { label: "Accelerator", color: "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30" },
+  NETWORK: { label: "Network", color: "bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30" },
+  PORTFOLIO: { label: "Portfolio", color: "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30" },
+  INVESTOR_NETWORK: { label: "Co-Investor", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/30" },
+  OTHER: { label: "Other", color: "bg-gray-500/20 text-gray-400 border-gray-500/30 hover:bg-gray-500/30" },
+};
+
 interface CompaniesFiltersProps {
   sectors: string[];
+  sourceTypes?: DealSource[];
 }
 
-export function CompaniesFilters({ sectors }: CompaniesFiltersProps) {
+export function CompaniesFilters({ sectors, sourceTypes = [] }: CompaniesFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -36,6 +50,7 @@ export function CompaniesFilters({ sectors }: CompaniesFiltersProps) {
   const currentSearch = searchParams.get("search") || "";
   const currentStage = searchParams.get("stage") || "ALL";
   const currentSector = searchParams.get("sector") || "ALL";
+  const currentSource = searchParams.get("source") || "ALL";
 
   const updateParams = useCallback(
     (key: string, value: string) => {
@@ -63,10 +78,49 @@ export function CompaniesFilters({ sectors }: CompaniesFiltersProps) {
     });
   }, [router]);
 
-  const hasActiveFilters = currentSearch || currentStage !== "ALL" || currentSector !== "ALL";
+  const hasActiveFilters = currentSearch || currentStage !== "ALL" || currentSector !== "ALL" || currentSource !== "ALL";
+
+  // Get all available source types (show configured ones first, then any in use)
+  const allSourceTypes = Object.keys(sourceConfig) as DealSource[];
+  const displaySourceTypes = sourceTypes.length > 0 ? sourceTypes : allSourceTypes.slice(0, 5);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="space-y-4 mb-6">
+      {/* Source Filter Chips */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground uppercase tracking-wider mr-2">Source:</span>
+        <button
+          onClick={() => updateParams("source", "ALL")}
+          className={cn(
+            "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
+            currentSource === "ALL"
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/50"
+          )}
+        >
+          All
+        </button>
+        {displaySourceTypes.map((source) => {
+          const config = sourceConfig[source];
+          const isActive = currentSource === source;
+          return (
+            <button
+              key={source}
+              onClick={() => updateParams("source", isActive ? "ALL" : source)}
+              className={cn(
+                "px-3 py-1.5 rounded-md text-xs font-medium border transition-colors",
+                isActive
+                  ? config.color
+                  : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/50"
+              )}
+            >
+              {config.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
       {/* Search Input */}
       <div className="relative flex-1 max-w-sm">
         <svg
@@ -161,6 +215,7 @@ export function CompaniesFilters({ sectors }: CompaniesFiltersProps) {
           Clear
         </Button>
       )}
+      </div>
     </div>
   );
 }

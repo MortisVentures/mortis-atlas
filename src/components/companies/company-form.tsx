@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SourceAttributionFields } from "@/components/forms";
 
 import {
   createCompanySchema,
@@ -73,8 +74,9 @@ export function CompanyForm({ company, mode }: CompanyFormProps) {
   // Use appropriate schema based on mode
   const schema = isEditing ? updateCompanySchema : createCompanySchema;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<CreateCompanyInput | UpdateCompanyInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       name: company?.name ?? "",
       website: company?.website ?? "",
@@ -90,6 +92,12 @@ export function CompanyForm({ company, mode }: CompanyFormProps) {
       linkedinUrl: company?.linkedinUrl ?? "",
       twitterHandle: company?.twitterHandle ?? "",
       notes: company?.notes ?? "",
+      // Source Attribution
+      sourceType: (company as Record<string, unknown>)?.sourceType as string ?? undefined,
+      sourceChannel: (company as Record<string, unknown>)?.sourceChannel as string ?? "",
+      sourceDetail: (company as Record<string, unknown>)?.sourceDetail as string ?? "",
+      referrerContactId: (company as Record<string, unknown>)?.referrerContactId as string ?? undefined,
+      referralDate: (company as Record<string, unknown>)?.referralDate as Date ?? undefined,
     },
   });
 
@@ -548,6 +556,9 @@ export function CompanyForm({ company, mode }: CompanyFormProps) {
             />
           </CardContent>
         </Card>
+
+        {/* Source Attribution */}
+        <SourceAttributionFields entityType="company" />
 
         {/* Form Actions */}
         <div className="flex items-center justify-end gap-4">

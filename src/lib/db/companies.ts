@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { Company, CompanyStage, Prisma } from "@prisma/client";
+import { Company, CompanyStage, DealSource, Prisma } from "@prisma/client";
 
 // ============================================
 // Types
@@ -10,6 +10,7 @@ export interface CompanyFilters {
   sector?: string;
   search?: string;
   userId?: string;
+  sourceType?: DealSource;
 }
 
 export interface PaginationParams {
@@ -45,6 +46,12 @@ export interface CompanyInput {
   logoUrl?: string | null;
   notes?: string | null;
   userId: string;
+  // Source Attribution
+  sourceType?: DealSource | null;
+  sourceChannel?: string | null;
+  sourceDetail?: string | null;
+  referrerContactId?: string | null;
+  referralDate?: Date | null;
 }
 
 export interface CompanyUpdate {
@@ -63,11 +70,23 @@ export interface CompanyUpdate {
   twitterHandle?: string | null;
   logoUrl?: string | null;
   notes?: string | null;
+  // Source Attribution
+  sourceType?: DealSource | null;
+  sourceChannel?: string | null;
+  sourceDetail?: string | null;
+  referrerContactId?: string | null;
+  referralDate?: Date | null;
 }
 
 export interface CompanyWithRelations extends Company {
   contacts: { id: string; firstName: string; lastName: string; role: string | null; isPrimary: boolean }[];
   deals: { id: string; dealName: string; stage: string; amount: Prisma.Decimal | null }[];
+  referrerContact: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    company: { name: string } | null;
+  } | null;
   _count: {
     contacts: number;
     deals: number;
@@ -112,6 +131,10 @@ export async function getCompanies(
     where.userId = filters.userId;
   }
 
+  if (filters?.sourceType) {
+    where.sourceType = filters.sourceType;
+  }
+
   if (filters?.search) {
     where.OR = [
       { name: { contains: filters.search, mode: "insensitive" } },
@@ -146,6 +169,18 @@ export async function getCompanies(
           },
           orderBy: { updatedAt: "desc" },
           take: 3,
+        },
+        referrerContact: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            company: {
+              select: {
+                name: true,
+              },
+            },
+          },
         },
         _count: {
           select: {
@@ -294,6 +329,11 @@ export async function createCompany(data: CompanyInput): Promise<Company> {
       logoUrl: data.logoUrl,
       notes: data.notes,
       userId: data.userId,
+      // Source Attribution
+      sourceType: data.sourceType,
+      sourceChannel: data.sourceChannel,
+      sourceDetail: data.sourceDetail,
+      referrerContactId: data.referrerContactId,
     },
   });
 }
@@ -418,6 +458,26 @@ export async function getUniqueSectors(userId?: string): Promise<string[]> {
   return sectors
     .map((s) => s.sector)
     .filter((s): s is string => s !== null);
+}
+
+/**
+ * Get source types in use for filtering
+ */
+export async function getUniqueSourceTypes(userId?: string): Promise<DealSource[]> {
+  const where: Prisma.CompanyWhereInput = {
+    sourceType: { not: null },
+    ...(userId ? { userId } : {}),
+  };
+
+  const sources = await prisma.company.findMany({
+    where,
+    select: { sourceType: true },
+    distinct: ["sourceType"],
+  });
+
+  return sources
+    .map((s) => s.sourceType)
+    .filter((s): s is DealSource => s !== null);
 }
 
 /**

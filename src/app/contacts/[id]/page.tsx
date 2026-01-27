@@ -5,9 +5,10 @@ import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ highlight?: string }>;
 }
 
-export default async function ContactDetailPage({ params }: PageProps) {
+export default async function ContactDetailPage({ params, searchParams }: PageProps) {
   // Get authenticated user
   const session = await auth();
   if (!session?.user?.id) {
@@ -15,6 +16,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
   }
 
   const { id } = await params;
+  const { highlight } = await searchParams;
   const contact = await getContactWithFullDetails(id);
 
   if (!contact) {
@@ -87,7 +89,7 @@ export default async function ContactDetailPage({ params }: PageProps) {
     _count: contact._count,
   };
 
-  return <ContactDetailView contact={contactData} />;
+  return <ContactDetailView contact={contactData} highlightSection={highlight} />;
 }
 
 export async function generateMetadata({ params }: PageProps) {

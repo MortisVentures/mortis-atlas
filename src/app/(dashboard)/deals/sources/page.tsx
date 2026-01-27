@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -240,7 +241,16 @@ export default function SourceAttributionPage() {
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium">{referrer.name}</p>
+                        {referrer.contactId ? (
+                          <Link
+                            href={`/contacts/${referrer.contactId}?highlight=referrals`}
+                            className="font-medium text-foreground hover:text-tactical-400 transition-colors"
+                          >
+                            {referrer.name}
+                          </Link>
+                        ) : (
+                          <p className="font-medium">{referrer.name}</p>
+                        )}
                         <p className="text-xs text-zinc-500">
                           {referrer.organization}
                         </p>

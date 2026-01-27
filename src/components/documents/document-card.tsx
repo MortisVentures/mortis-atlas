@@ -16,21 +16,20 @@ import {
   EyeOpenIcon,
   ClockIcon,
   PersonIcon,
-  ExternalLinkIcon,
   LockClosedIcon,
   LockOpen1Icon,
   LayersIcon,
 } from "@radix-ui/react-icons";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   DocumentMetadata,
-  DocumentType,
   AccessLevel,
+  SourceType,
   documentTypeConfig,
   accessLevelConfig,
+  sourceTypeConfig,
   formatFileSize,
 } from "@/lib/types/documents";
 
@@ -81,6 +80,28 @@ export function AccessIcon({ accessLevel, className }: AccessIconProps) {
 }
 
 // =============================================================================
+// SOURCE BADGE COMPONENT
+// =============================================================================
+
+interface SourceBadgeProps {
+  source: SourceType;
+  sourceName?: string;
+  size?: "xs" | "sm";
+  showLabel?: boolean;
+}
+
+export function SourceBadge({ source, sourceName, size = "xs", showLabel = true }: SourceBadgeProps) {
+  const config = sourceTypeConfig[source];
+  if (!config) return null;
+
+  return (
+    <Badge className={cn(config.color, size === "xs" ? "text-[10px] px-1.5 py-0.5" : "")} size={size}>
+      {showLabel ? (sourceName || config.label) : config.label}
+    </Badge>
+  );
+}
+
+// =============================================================================
 // DOCUMENT CARD COMPONENT
 // =============================================================================
 
@@ -94,6 +115,7 @@ interface DocumentCardProps {
   onDelete?: (doc: DocumentMetadata) => void;
   showCompany?: boolean;
   showVersions?: boolean;
+  showSource?: boolean;
 }
 
 export function DocumentCard({
@@ -106,6 +128,7 @@ export function DocumentCard({
   onDelete,
   showCompany = true,
   showVersions = true,
+  showSource = true,
 }: DocumentCardProps) {
   const [showMenu, setShowMenu] = React.useState(false);
   const typeConfig = documentTypeConfig[document.documentType];
@@ -236,6 +259,9 @@ export function DocumentCard({
             <Badge variant="secondary" size="xs">
               {formatFileSize(document.fileSize)}
             </Badge>
+            {showSource && document.source && (
+              <SourceBadge source={document.source} sourceName={document.sourceName} size="xs" />
+            )}
           </div>
 
           {showCompany && document.companyName && (
@@ -343,6 +369,9 @@ export function DocumentCard({
               <AccessIcon accessLevel={document.accessLevel} className="size-3" />
               {accessConfig.label}
             </Badge>
+            {showSource && document.source && (
+              <SourceBadge source={document.source} sourceName={document.sourceName} size="xs" />
+            )}
             {showVersions && document.currentVersion > 1 && (
               <Badge variant="secondary" size="xs" className="gap-1">
                 <LayersIcon className="size-3" />
@@ -463,6 +492,7 @@ interface DocumentListProps {
   onEdit?: (doc: DocumentMetadata) => void;
   onDelete?: (doc: DocumentMetadata) => void;
   showCompany?: boolean;
+  showSource?: boolean;
   emptyMessage?: string;
 }
 
@@ -475,6 +505,7 @@ export function DocumentList({
   onEdit,
   onDelete,
   showCompany = true,
+  showSource = true,
   emptyMessage = "No documents found",
 }: DocumentListProps) {
   if (documents.length === 0) {
@@ -500,6 +531,7 @@ export function DocumentList({
             onEdit={onEdit}
             onDelete={onDelete}
             showCompany={showCompany}
+            showSource={showSource}
           />
         ))}
       </div>
@@ -517,6 +549,7 @@ export function DocumentList({
             onView={onView}
             onDownload={onDownload}
             showCompany={showCompany}
+            showSource={showSource}
           />
         ))}
       </div>
@@ -537,6 +570,7 @@ export function DocumentList({
             onEdit={onEdit}
             onDelete={onDelete}
             showCompany={showCompany}
+            showSource={showSource}
           />
         ))}
       </AnimatePresence>

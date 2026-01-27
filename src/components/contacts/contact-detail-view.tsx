@@ -37,6 +37,7 @@ import {
 import { Badge, StageBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ReferralActivity } from "./referral-activity";
 
 // =============================================================================
 // TYPES
@@ -303,16 +304,32 @@ function Tab({
 
 interface ContactDetailViewProps {
   contact: ContactDetailData;
+  highlightSection?: string;
 }
 
-export function ContactDetailView({ contact }: ContactDetailViewProps) {
+export function ContactDetailView({ contact, highlightSection }: ContactDetailViewProps) {
   const router = useRouter();
+  const referralSectionRef = React.useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = React.useState<"overview" | "deals" | "activity" | "notes">("overview");
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({
     info: true,
     company: true,
     deals: true,
   });
+
+  // Scroll to referral section if highlighted
+  React.useEffect(() => {
+    if (highlightSection === "referrals" && referralSectionRef.current) {
+      // Small delay to ensure the component is fully rendered
+      const timer = setTimeout(() => {
+        referralSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightSection]);
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -531,23 +548,21 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
                 </Card>
               )}
 
-              {/* Referral Tracking Placeholder */}
-              <Card variant="raised" className="border-dashed border-2 border-muted">
-                <CardContent padding="lg">
-                  <div className="flex items-center justify-center py-8 text-center">
-                    <div>
-                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-                        <PersonIcon className="size-6 text-muted-foreground" />
-                      </div>
-                      <h3 className="font-medium mb-1">Referral Tracking</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Track deals referred by this contact and manage referral rewards.
-                      </p>
-                      <Badge variant="outline" size="sm">Coming in Phase 2</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Referral Activity */}
+              <div
+                ref={referralSectionRef}
+                id="referral-activity"
+                className={cn(
+                  "scroll-mt-6 transition-all duration-500",
+                  highlightSection === "referrals" && "ring-2 ring-tactical-500/50 rounded-lg"
+                )}
+              >
+                <ReferralActivity
+                  contactId={contact.id}
+                  contactEmail={contact.email}
+                  contactName={fullName}
+                />
+              </div>
             </motion.div>
           )}
 

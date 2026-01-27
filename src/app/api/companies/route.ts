@@ -5,8 +5,9 @@ import {
   listCompaniesQuerySchema,
 } from "@/lib/validations/company";
 import { ZodError } from "zod";
-import { CompanyStage } from "@prisma/client";
+import { CompanyStage, DealSource } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import type { CompanyInput } from "@/lib/db/companies";
 
 /**
  * GET /api/companies
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Validation error",
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       );
@@ -82,11 +83,12 @@ export async function POST(request: NextRequest) {
     // Validate request body
     const validated = createCompanySchema.parse(body);
 
-    // Transform empty strings to null
-    const companyData = {
-      ...validated,
+    // Transform empty strings to null and cast enum types
+    const companyData: CompanyInput = {
+      name: validated.name,
       website: validated.website || null,
       description: validated.description || null,
+      stage: (validated.stage || "PROSPECT") as CompanyStage,
       sector: validated.sector || null,
       location: validated.location || null,
       foundedYear: validated.foundedYear || null,
@@ -98,6 +100,12 @@ export async function POST(request: NextRequest) {
       twitterHandle: validated.twitterHandle || null,
       logoUrl: validated.logoUrl || null,
       notes: validated.notes || null,
+      // Source Attribution
+      sourceType: validated.sourceType ? (validated.sourceType as DealSource) : null,
+      sourceChannel: validated.sourceChannel || null,
+      sourceDetail: validated.sourceDetail || null,
+      referrerContactId: validated.referrerContactId || null,
+      referralDate: validated.referralDate || null,
       userId: session.user.id,
     };
 
@@ -110,7 +118,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Validation error",
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       );

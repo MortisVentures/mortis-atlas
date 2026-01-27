@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileIcon,
@@ -13,21 +14,22 @@ import {
   BarChartIcon,
 } from "@radix-ui/react-icons";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/layout";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   DocumentType,
   AccessLevel,
+  SourceType,
   DocumentMetadata,
-  DocumentFilter,
   documentTypeConfig,
   accessLevelConfig,
+  sourceTypeConfig,
   formatFileSize,
 } from "@/lib/types/documents";
-import { getDocuments, getDocumentStats, SAMPLE_DOCUMENTS } from "@/lib/storage/documents";
+import { SAMPLE_DOCUMENTS } from "@/lib/storage/documents";
 import { DocumentList } from "@/components/documents/document-card";
 import { DocumentViewer } from "@/components/documents/document-viewer";
 import { DocumentUploadModal } from "@/components/documents/document-uploader";
@@ -42,6 +44,7 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState<DocumentType | "ALL">("ALL");
   const [accessFilter, setAccessFilter] = React.useState<AccessLevel | "ALL">("ALL");
+  const [sourceFilter, setSourceFilter] = React.useState<SourceType | "ALL">("ALL");
   const [viewMode, setViewMode] = React.useState<"list" | "grid">("grid");
   const [sortBy, setSortBy] = React.useState<"date" | "name" | "size">("date");
 
@@ -53,14 +56,19 @@ export default function DocumentsPage() {
   const stats = React.useMemo(() => {
     const totalSize = documents.reduce((sum, doc) => sum + doc.fileSize, 0);
     const byType: Record<string, number> = {};
+    const bySource: Record<string, number> = {};
     documents.forEach((doc) => {
       byType[doc.documentType] = (byType[doc.documentType] || 0) + 1;
+      if (doc.source) {
+        bySource[doc.source] = (bySource[doc.source] || 0) + 1;
+      }
     });
 
     return {
       total: documents.length,
       totalSize,
       byType,
+      bySource,
       recent: documents.filter((d) => {
         const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         return new Date(d.createdAt).getTime() > weekAgo;
@@ -80,6 +88,7 @@ export default function DocumentsPage() {
           doc.name.toLowerCase().includes(query) ||
           doc.description?.toLowerCase().includes(query) ||
           doc.companyName?.toLowerCase().includes(query) ||
+          doc.sourceName?.toLowerCase().includes(query) ||
           doc.tags.some((tag) => tag.toLowerCase().includes(query))
       );
     }
@@ -92,6 +101,11 @@ export default function DocumentsPage() {
     // Apply access filter
     if (accessFilter !== "ALL") {
       result = result.filter((doc) => doc.accessLevel === accessFilter);
+    }
+
+    // Apply source filter
+    if (sourceFilter !== "ALL") {
+      result = result.filter((doc) => doc.source === sourceFilter);
     }
 
     // Apply sorting
@@ -108,7 +122,7 @@ export default function DocumentsPage() {
     });
 
     setFilteredDocs(result);
-  }, [documents, searchQuery, typeFilter, accessFilter, sortBy]);
+  }, [documents, searchQuery, typeFilter, accessFilter, sourceFilter, sortBy]);
 
   // Handlers
   const handleView = (doc: DocumentMetadata) => {
@@ -138,37 +152,29 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       {/* Page Header */}
-      <div className="border-b border-border bg-card/50">
-        <div className="container mx-auto px-6 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-atlas-md bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                <FileIcon className="size-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Documents</h1>
-                <p className="text-sm text-muted-foreground">
-                  Manage and organize all your fund documents
-                </p>
-              </div>
-            </div>
-
+      <PageHeader
+        title="Documents"
+        description="Manage and organize all your fund documents"
+        actions={
+          <div className="flex gap-2">
+            <Link href="/documents/upload">
+              <Button variant="outline" className="gap-2">
+                <UploadIcon className="size-4" />
+                New Upload
+              </Button>
+            </Link>
             <Button onClick={() => setShowUploadModal(true)} className="gap-2">
               <UploadIcon className="size-4" />
-              Upload Documents
+              Quick Upload
             </Button>
-          </motion.div>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-8">
+      <div className="space-y-6">
         {/* Stats Row */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -277,6 +283,23 @@ export default function DocumentsPage() {
             <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           </div>
 
+          {/* Source Filter */}
+          <div className="relative">
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value as SourceType | "ALL")}
+              className="appearance-none bg-card border border-border rounded-atlas-sm px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-tactical-500"
+            >
+              <option value="ALL">All Sources</option>
+              {Object.entries(sourceTypeConfig).map(([key, config]) => (
+                <option key={key} value={key}>
+                  {config.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          </div>
+
           {/* Sort By */}
           <div className="relative">
             <select
@@ -319,8 +342,9 @@ export default function DocumentsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="flex flex-wrap items-center gap-2 mb-6"
+          className="flex flex-wrap items-center gap-2 mb-4"
         >
+          <span className="text-xs text-muted-foreground font-medium mr-1">Type:</span>
           <button
             onClick={() => setTypeFilter("ALL")}
             className={cn(
@@ -342,6 +366,45 @@ export default function DocumentsPage() {
                 className={cn(
                   "px-3 py-1.5 text-sm rounded-atlas-sm border transition-all",
                   typeFilter === key
+                    ? config.color
+                    : "border-border text-muted-foreground hover:border-muted-foreground"
+                )}
+              >
+                {config.label} ({count})
+              </button>
+            );
+          })}
+        </motion.div>
+
+        {/* Source Quick Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28 }}
+          className="flex flex-wrap items-center gap-2 mb-6"
+        >
+          <span className="text-xs text-muted-foreground font-medium mr-1">Source:</span>
+          <button
+            onClick={() => setSourceFilter("ALL")}
+            className={cn(
+              "px-3 py-1.5 text-sm rounded-atlas-sm border transition-all",
+              sourceFilter === "ALL"
+                ? "bg-tactical-500/20 border-tactical-500/30 text-tactical-400"
+                : "border-border text-muted-foreground hover:border-muted-foreground"
+            )}
+          >
+            All Sources
+          </button>
+          {Object.entries(sourceTypeConfig).map(([key, config]) => {
+            const count = stats.bySource[key] || 0;
+            if (count === 0) return null;
+            return (
+              <button
+                key={key}
+                onClick={() => setSourceFilter(key as SourceType)}
+                className={cn(
+                  "px-3 py-1.5 text-sm rounded-atlas-sm border transition-all",
+                  sourceFilter === key
                     ? config.color
                     : "border-border text-muted-foreground hover:border-muted-foreground"
                 )}
@@ -399,6 +462,6 @@ export default function DocumentsPage() {
           onShare={handleShare}
         />
       )}
-    </div>
+    </>
   );
 }

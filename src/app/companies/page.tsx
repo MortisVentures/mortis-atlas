@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCompanies, getCompanyStats, getUniqueSectors } from "@/lib/db";
+import { getCompanies, getCompanyStats, getUniqueSectors, getUniqueSourceTypes } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,15 +12,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CompanyStage } from "@prisma/client";
+import { CompanyStage, DealSource } from "@prisma/client";
 import { CompaniesFilters } from "@/components/companies-filters";
 import { auth } from "@/lib/auth";
+import { DEAL_SOURCE_CONFIG } from "@/lib/db/deals";
 
 interface PageProps {
   searchParams: Promise<{
     search?: string;
     stage?: string;
     sector?: string;
+    source?: string;
     page?: string;
   }>;
 }
@@ -136,12 +138,14 @@ async function CompaniesTable({
   search,
   stage,
   sector,
+  source,
   page,
   userId,
 }: {
   search?: string;
   stage?: string;
   sector?: string;
+  source?: string;
   page?: number;
   userId: string;
 }) {
@@ -151,11 +155,12 @@ async function CompaniesTable({
       search,
       stage: stage as CompanyStage | undefined,
       sector,
+      sourceType: source as DealSource | undefined,
     },
     { page: page || 1, limit: 50 }
   );
 
-  const hasFilters = search || stage || sector;
+  const hasFilters = search || stage || sector || source;
 
   if (companies.length === 0) {
     return (
@@ -216,13 +221,16 @@ async function CompaniesTable({
               Sector
             </TableHead>
             <TableHead className="text-xs uppercase tracking-wider font-semibold">
+              Source
+            </TableHead>
+            <TableHead className="text-xs uppercase tracking-wider font-semibold">
+              Referrer
+            </TableHead>
+            <TableHead className="text-xs uppercase tracking-wider font-semibold">
               Stage
             </TableHead>
             <TableHead className="text-xs uppercase tracking-wider font-semibold text-right">
               Funding
-            </TableHead>
-            <TableHead className="text-xs uppercase tracking-wider font-semibold">
-              Location
             </TableHead>
             <TableHead className="text-xs uppercase tracking-wider font-semibold">
               Updated
@@ -254,6 +262,44 @@ async function CompaniesTable({
                 <span className="text-sm text-muted-foreground">
                   {company.sector || "—"}
                 </span>
+              </TableCell>
+              <TableCell>
+                {company.sourceType ? (
+                  <Link
+                    href={`/companies?source=${company.sourceType}`}
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium transition-opacity hover:opacity-80"
+                    style={{
+                      background: DEAL_SOURCE_CONFIG[company.sourceType]?.color.includes("bg-")
+                        ? undefined
+                        : undefined,
+                    }}
+                  >
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${DEAL_SOURCE_CONFIG[company.sourceType]?.color || "bg-slate-500/20 text-slate-400 border-slate-500/30"}`}>
+                      {DEAL_SOURCE_CONFIG[company.sourceType]?.label || company.sourceType}
+                    </span>
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {company.referrerContact ? (
+                  <Link
+                    href={`/contacts/${company.referrerContact.id}`}
+                    className="group flex items-center gap-1 text-sm hover:text-primary transition-colors"
+                  >
+                    <span className="font-medium">
+                      {company.referrerContact.firstName} {company.referrerContact.lastName}
+                    </span>
+                    {company.referrerContact.company && (
+                      <span className="text-xs text-muted-foreground">
+                        ({company.referrerContact.company.name})
+                      </span>
+                    )}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
               </TableCell>
               <TableCell>
                 <span
@@ -294,17 +340,20 @@ async function CompaniesTable({
       <div className="px-4 py-3 border-t border-border bg-muted/20">
         <p className="text-xs text-muted-foreground">
           Showing {companies.length} of {pagination.total} companies
-          {(search || stage || sector) && " (filtered)"}
+          {(search || stage || sector || source) && " (filtered)"}
         </p>
       </div>
     </div>
   );
 }
 
-// Filters wrapper to fetch sectors
+// Filters wrapper to fetch sectors and source types
 async function FiltersWrapper({ userId }: { userId: string }) {
-  const sectors = await getUniqueSectors(userId);
-  return <CompaniesFilters sectors={sectors} />;
+  const [sectors, sourceTypes] = await Promise.all([
+    getUniqueSectors(userId),
+    getUniqueSourceTypes(userId),
+  ]);
+  return <CompaniesFilters sectors={sectors} sourceTypes={sourceTypes} />;
 }
 
 export default async function CompaniesPage({ searchParams }: PageProps) {
@@ -316,7 +365,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
   const userId = session.user.id;
 
   const params = await searchParams;
-  const { search, stage, sector, page } = params;
+  const { search, stage, sector, source, page } = params;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -385,6 +434,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
           search={search}
           stage={stage}
           sector={sector}
+          source={source}
           page={page ? parseInt(page) : 1}
           userId={userId}
         />

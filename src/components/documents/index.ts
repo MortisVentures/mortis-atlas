@@ -1,5 +1,6 @@
 export * from "./document-card";
 export * from "./document-uploader";
+export * from "./document-upload-form";
 export * from "./document-viewer";
 
 // Re-export types from lib

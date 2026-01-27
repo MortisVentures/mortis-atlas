@@ -2,6 +2,12 @@
 // DOCUMENT TYPES AND INTERFACES
 // =============================================================================
 
+import { SourceType, sourceTypeConfig } from "@/lib/deals/source-tracking";
+
+// Re-export SourceType for convenience
+export type { SourceType };
+export { sourceTypeConfig };
+
 export type DocumentType =
   | "PITCH_DECK"
   | "FINANCIAL_MODEL"
@@ -56,6 +62,10 @@ export interface DocumentMetadata {
   dealName?: string;
   icMemoId?: string;
 
+  // Source attribution (inherited from linked company)
+  source?: SourceType;
+  sourceName?: string; // e.g., "TechCrunch Disrupt", "Y Combinator"
+
   // Versions
   currentVersion: number;
   versions: DocumentVersion[];
@@ -94,6 +104,7 @@ export interface DocumentUploadOptions {
 export interface DocumentFilter {
   documentType?: DocumentType | "ALL";
   accessLevel?: AccessLevel | "ALL";
+  source?: SourceType | "ALL";
   companyId?: string;
   dealId?: string;
   uploadedById?: string;
@@ -106,6 +117,7 @@ export interface DocumentStats {
   totalDocuments: number;
   totalSize: number;
   byType: Record<DocumentType, number>;
+  bySource: Partial<Record<SourceType, number>>;
   byCompany: { companyId: string; companyName: string; count: number }[];
   recentUploads: number;
 }

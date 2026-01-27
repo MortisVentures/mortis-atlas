@@ -1,6 +1,3 @@
-// Mortis Atlas - VC/Investment CRM Schema
-// Learn more: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,59 +6,35 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================
-// NextAuth.js Models + RBAC
-// ============================================
-
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?   // Hashed password for credentials auth
-
-  // RBAC
-  role          UserRole  @default(ANALYST)
-  isActive      Boolean   @default(true)
-  lastLoginAt   DateTime?
-
-  // Relations
-  accounts      Account[]
-  sessions      Session[]
-  companies     Company[]
-  contacts      Contact[]
-  deals         Deal[]
-  activities    Activity[]
-
-  // Document relations
-  documents         Document[]
-  documentVersions  DocumentVersion[]
-  documentAccessLogs DocumentAccessLog[]
-
-  // IC Memo relations
-  icMemos       ICMemo[]
-  icMemoVotes   ICMemoVote[]
-
-  // LP Profile (only for LP role users)
-  lpProfile     LPProfile?
-
-  // Audit trail
-  auditLogs     AuditLog[]
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String              @id @default(cuid())
+  name                String?
+  email               String?             @unique
+  emailVerified       DateTime?
+  image               String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  isActive            Boolean             @default(true)
+  lastLoginAt         DateTime?
+  password            String?
+  role                UserRole            @default(ANALYST)
+  accounts            Account[]
+  activities          Activity[]
+  auditLogs           AuditLog[]
+  companies           Company[]
+  contacts            Contact[]
+  deals               Deal[]
+  dealTeamMemberships DealTeamMember[]
+  documents           Document[]
+  documentAccessLogs  DocumentAccessLog[]
+  documentVersions    DocumentVersion[]
+  icMemos             ICMemo[]
+  icMemoVotes         ICMemoVote[]
+  lpProfile           LPProfile?
+  sessions            Session[]
 
   @@index([role])
   @@index([email])
-}
-
-// User roles for RBAC
-enum UserRole {
-  ADMIN         // Full system access, user management
-  PARTNER       // Investment decisions, full deal access, LP data access
-  ANALYST       // Deal execution, limited LP data access
-  LP            // Read-only portfolio access, own capital account only
 }
 
 model Account {
@@ -70,15 +43,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -89,8 +61,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -103,165 +74,160 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ============================================
-// Core CRM Models
-// ============================================
-
 model Company {
-  id              String        @id @default(cuid())
-  name            String
-  website         String?
-  description     String?       @db.Text
-  stage           CompanyStage  @default(PROSPECT)
-  sector          String?       // e.g., "FinTech", "HealthTech", "SaaS"
-  location        String?
-  foundedYear     Int?
-  employeeCount   String?       // e.g., "1-10", "11-50", "51-200"
-  fundingRound    String?       // e.g., "Seed", "Series A", "Series B"
-  fundingAmount   Decimal?      @db.Decimal(15, 2) // Total funding raised
-  valuation       Decimal?      @db.Decimal(15, 2) // Current/latest company valuation
-  linkedinUrl     String?
-  twitterHandle   String?       // e.g., "@companyname"
-  logoUrl         String?
-  notes           String?       @db.Text
-
-  // Ownership
-  userId          String
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Relations
-  contacts        Contact[]
-  deals           Deal[]
-  activities      Activity[]
-  tags            CompanyTag[]
-  documents       Document[]
-  icMemos         ICMemo[]
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                String       @id @default(cuid())
+  name              String
+  website           String?
+  description       String?
+  stage             CompanyStage @default(PROSPECT)
+  sector            String?
+  location          String?
+  foundedYear       Int?
+  employeeCount     String?
+  linkedinUrl       String?
+  logoUrl           String?
+  notes             String?
+  userId            String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  valuation         Decimal?     @db.Decimal(15, 2)
+  fundingAmount     Decimal?     @db.Decimal(15, 2)
+  fundingRound      String?
+  twitterHandle     String?
+  referrerContactId String?
+  sourceChannel     String?
+  sourceDetail      String?
+  sourceType        DealSource?
+  activities        Activity[]
+  referrerContact   Contact?     @relation("CompanyReferrer", fields: [referrerContactId], references: [id])
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags              CompanyTag[]
+  contacts          Contact[]
+  deals             Deal[]
+  documents         Document[]
+  icMemos           ICMemo[]
 
   @@index([userId])
   @@index([stage])
   @@index([sector])
+  @@index([sourceType])
+  @@index([referrerContactId])
   @@index([name])
 }
 
-enum CompanyStage {
-  PROSPECT        // Initial identification
-  QUALIFIED       // Meets investment criteria
-  ENGAGED         // Active conversations
-  DUE_DILIGENCE   // Deep dive analysis
-  PASSED          // Decided not to pursue
-  PORTFOLIO       // Invested company
-  EXITED          // Successfully exited
-}
-
 model Contact {
-  id              String     @id @default(cuid())
-  firstName       String
-  lastName        String
-  email           String?
-  phone           String?
-  role            String?    // e.g., "CEO", "CTO", "Founder"
-  linkedinUrl     String?
-  notes           String?    @db.Text
-  isPrimary       Boolean    @default(false) // Primary contact for company
-
-  // Ownership
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Company relationship (optional - contact can exist without company)
-  companyId       String?
-  company         Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
-
-  // Relations
-  activities      Activity[]
-  deals           Deal[]     @relation("DealContact")
-
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id                     String     @id @default(cuid())
+  firstName              String
+  lastName               String
+  email                  String?
+  phone                  String?
+  role                   String?
+  linkedinUrl            String?
+  notes                  String?
+  isPrimary              Boolean    @default(false)
+  userId                 String
+  companyId              String?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+  lastReferralDate       DateTime?
+  referralConversionRate Decimal?   @db.Decimal(5, 2)
+  successfulReferrals    Int        @default(0)
+  totalReferralsMade     Int        @default(0)
+  activities             Activity[]
+  referredCompanies      Company[]  @relation("CompanyReferrer")
+  company                Company?   @relation(fields: [companyId], references: [id])
+  user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deals                  Deal[]     @relation("DealContact")
+  referredDeals          Deal[]     @relation("DealReferrer")
 
   @@index([userId])
   @@index([companyId])
   @@index([email])
   @@index([lastName, firstName])
+  @@index([totalReferralsMade])
 }
 
 model Deal {
-  id              String     @id @default(cuid())
-  dealName        String
-  amount          Decimal?   @db.Decimal(15, 2) // Investment amount
-  valuation       Decimal?   @db.Decimal(15, 2) // Company valuation
-  stage           DealStage  @default(INITIAL_REVIEW)
-  probability     Int?       // 0-100 likelihood of closing
-  expectedClose   DateTime?
-  actualClose     DateTime?
-  notes           String?    @db.Text
-
-  // Ownership
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Company relationship
-  companyId       String
-  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  // Primary contact for this deal
-  contactId       String?
-  contact         Contact?   @relation("DealContact", fields: [contactId], references: [id], onDelete: SetNull)
-
-  // Relations
-  activities      Activity[]
-  documents       Document[]
-  icMemos         ICMemo[]
-
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id                String           @id @default(cuid())
+  dealName          String
+  amount            Decimal?         @db.Decimal(15, 2)
+  valuation         Decimal?         @db.Decimal(15, 2)
+  stage             DealStage        @default(INITIAL_REVIEW)
+  probability       Int?
+  expectedClose     DateTime?
+  actualClose       DateTime?
+  notes             String?
+  userId            String
+  companyId         String
+  contactId         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  lastActivityDate  DateTime?
+  lastStageChange   DateTime?
+  ownershipTarget   Decimal?         @db.Decimal(5, 4)
+  postMoneyVal      Decimal?         @db.Decimal(15, 2)
+  priority          DealPriority     @default(MEDIUM)
+  proRataRights     Boolean          @default(false)
+  referralDate      DateTime?
+  referrerContactId String?
+  roundSize         Decimal?         @db.Decimal(15, 2)
+  sourceChannel     String?
+  sourceDetail      String?
+  sourceType        DealSource?
+  stageHistory      Json?
+  activities        Activity[]
+  company           Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact           Contact?         @relation("DealContact", fields: [contactId], references: [id])
+  referrerContact   Contact?         @relation("DealReferrer", fields: [referrerContactId], references: [id])
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamMembers       DealTeamMember[]
+  documents         Document[]
+  icMemos           ICMemo[]
 
   @@index([userId])
   @@index([companyId])
   @@index([contactId])
+  @@index([referrerContactId])
   @@index([stage])
+  @@index([priority])
+  @@index([sourceType])
   @@index([expectedClose])
+  @@index([lastStageChange])
 }
 
-enum DealStage {
-  INITIAL_REVIEW    // First look at opportunity
-  MEETING_SCHEDULED // Initial meeting set up
-  DEEP_DIVE         // Detailed analysis
-  PARTNER_REVIEW    // Internal partner discussion
-  TERM_SHEET        // Terms being negotiated
-  LEGAL_DILIGENCE   // Legal review
-  CLOSED_WON        // Deal completed
-  CLOSED_LOST       // Deal did not close
+model DealTeamMember {
+  id         String   @id @default(cuid())
+  dealId     String
+  userId     String
+  role       TeamRole @default(SUPPORT)
+  assignedAt DateTime @default(now())
+  notes      String?
+  deal       Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dealId, userId])
+  @@index([dealId])
+  @@index([userId])
 }
 
 model Activity {
-  id              String       @id @default(cuid())
-  type            ActivityType
-  subject         String
-  description     String?      @db.Text
-  activityDate    DateTime     @default(now())
-  dueDate         DateTime?    // For tasks
-  completed       Boolean      @default(false)
-
-  // Ownership
-  userId          String
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Polymorphic relationships (activity can be linked to any/all)
-  companyId       String?
-  company         Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  contactId       String?
-  contact         Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
-
-  dealId          String?
-  deal            Deal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id           String       @id @default(cuid())
+  type         ActivityType
+  subject      String
+  description  String?
+  activityDate DateTime     @default(now())
+  dueDate      DateTime?
+  completed    Boolean      @default(false)
+  userId       String
+  companyId    String?
+  contactId    String?
+  dealId       String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact      Contact?     @relation(fields: [contactId], references: [id])
+  deal         Deal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([companyId])
@@ -272,106 +238,63 @@ model Activity {
   @@index([dueDate])
 }
 
-enum ActivityType {
-  EMAIL         // Email sent/received
-  CALL          // Phone call
-  MEETING       // In-person or video meeting
-  NOTE          // General note
-  TASK          // To-do item
-  DEAL_UPDATE   // Deal stage change or update
-  INTRO         // Introduction made
-  DOCUMENT      // Document shared/received
-}
-
-// ============================================
-// Tagging System
-// ============================================
-
 model Tag {
-  id              String       @id @default(cuid())
-  name            String       @unique
-  color           String?      // Hex color for UI display
-  category        String?      // e.g., "Sector", "Technology", "Geography", "Theme"
-
-  // Relations
-  companies       CompanyTag[]
-  documents       DocumentTag[]
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id        String        @id @default(cuid())
+  name      String        @unique
+  color     String?
+  category  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  companies CompanyTag[]
+  documents DocumentTag[]
 
   @@index([category])
 }
 
 model CompanyTag {
-  companyId       String
-  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  tagId           String
-  tag             Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  assignedAt      DateTime     @default(now())
+  companyId  String
+  tagId      String
+  assignedAt DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([companyId, tagId])
   @@index([companyId])
   @@index([tagId])
 }
 
-// ============================================
-// Document Management Models
-// ============================================
-
 model Document {
-  id              String           @id @default(cuid())
-  name            String           // Display name
-  originalName    String           // Original file name
-  description     String?          @db.Text
-  documentType    DocumentType     @default(REFERENCE)
-  accessLevel     AccessLevel      @default(TEAM)
-
-  // File info
-  fileUrl         String           // Supabase storage URL
-  fileType        String           // pdf, xlsx, docx, pptx, png, jpg
-  fileSize        Int              // Size in bytes
-  mimeType        String           // MIME type
-
-  // Storage info
-  storagePath     String           // Full path in Supabase storage
-  bucketName      String           @default("documents")
-
-  // Version control
-  currentVersion  Int              @default(1)
-
-  // Relations - polymorphic (can be linked to company, deal, or IC memo)
+  id              String              @id @default(cuid())
+  name            String
+  originalName    String
+  description     String?
+  documentType    DocumentType        @default(REFERENCE)
+  accessLevel     AccessLevel         @default(TEAM)
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  mimeType        String
+  storagePath     String
+  bucketName      String              @default("documents")
+  currentVersion  Int                 @default(1)
   companyId       String?
-  company         Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
-
   dealId          String?
-  deal            Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
-
   icMemoId        String?
-  icMemo          ICMemo?          @relation(fields: [icMemoId], references: [id], onDelete: SetNull)
-
-  // Ownership
   uploadedById    String
-  uploadedBy      User             @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
-
-  // Sharing
-  shareLink       String?          // Signed URL for sharing
-  shareLinkExpiry DateTime?        // Expiration for share link
-
-  // Activity tracking
-  viewCount       Int              @default(0)
-  downloadCount   Int              @default(0)
+  shareLink       String?
+  shareLinkExpiry DateTime?
+  viewCount       Int                 @default(0)
+  downloadCount   Int                 @default(0)
   lastViewedAt    DateTime?
-
-  // Relations
-  versions        DocumentVersion[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  company         Company?            @relation(fields: [companyId], references: [id])
+  deal            Deal?               @relation(fields: [dealId], references: [id])
+  icMemo          ICMemo?             @relation(fields: [icMemoId], references: [id])
+  uploadedBy      User                @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
   accessLogs      DocumentAccessLog[]
   tags            DocumentTag[]
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  versions        DocumentVersion[]
 
   @@index([uploadedById])
   @@index([companyId])
@@ -383,40 +306,17 @@ model Document {
   @@index([name])
 }
 
-enum DocumentType {
-  PITCH_DECK        // Company presentation and pitch materials
-  FINANCIAL_MODEL   // Financial projections and models
-  IC_MEMO           // Investment committee memos
-  TERM_SHEET        // Investment term sheets
-  DD_REPORT         // Due diligence reports
-  BOARD_NOTES       // Board meeting notes
-  LEGAL             // Legal agreements and contracts
-  REFERENCE         // Reference materials and other documents
-}
-
-enum AccessLevel {
-  PRIVATE           // Uploader only
-  TEAM              // All fund members
-  IC_MEMBERS        // IC members only
-  LP_ACCESSIBLE     // LPs can view
-}
-
 model DocumentVersion {
-  id              String       @id @default(cuid())
-  versionNumber   Int
-  fileUrl         String       // URL to this version's file
-  fileSize        Int          // Size in bytes
-  changeNotes     String?      @db.Text
-
-  // Document relationship
-  documentId      String
-  document        Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  // Uploader
-  uploadedById    String
-  uploadedBy      User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime     @default(now())
+  id            String   @id @default(cuid())
+  versionNumber Int
+  fileUrl       String
+  fileSize      Int
+  changeNotes   String?
+  documentId    String
+  uploadedById  String
+  createdAt     DateTime @default(now())
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy    User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@unique([documentId, versionNumber])
   @@index([documentId])
@@ -424,25 +324,200 @@ model DocumentVersion {
 }
 
 model DocumentAccessLog {
-  id              String             @id @default(cuid())
-  action          DocumentAction
-  ipAddress       String?
-  userAgent       String?
-
-  // Document relationship
-  documentId      String
-  document        Document           @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  // User who accessed
-  userId          String
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime           @default(now())
+  id         String         @id @default(cuid())
+  action     DocumentAction
+  ipAddress  String?
+  userAgent  String?
+  documentId String
+  userId     String
+  createdAt  DateTime       @default(now())
+  document   Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+model DocumentTag {
+  documentId String
+  tagId      String
+  assignedAt DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+  @@index([documentId])
+  @@index([tagId])
+}
+
+model ICMemo {
+  id              String       @id @default(cuid())
+  title           String
+  status          ICMemoStatus @default(DRAFT)
+  recommendation  String?
+  requestedAmount Decimal?     @db.Decimal(15, 2)
+  proposedTerms   String?
+  companyId       String
+  dealId          String?
+  authorId        String
+  content         Json?
+  votingDeadline  DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  submittedAt     DateTime?
+  documents       Document[]
+  author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal            Deal?        @relation(fields: [dealId], references: [id])
+  votes           ICMemoVote[]
+
+  @@index([authorId])
+  @@index([companyId])
+  @@index([dealId])
+  @@index([status])
+}
+
+model ICMemoVote {
+  id        String   @id @default(cuid())
+  vote      VoteType
+  comment   String?
+  icMemoId  String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  icMemo    ICMemo   @relation(fields: [icMemoId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([icMemoId, userId])
+  @@index([icMemoId])
+  @@index([userId])
+}
+
+model LPProfile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  entityName            String?
+  entityType            String?
+  commitmentAmount      Decimal   @db.Decimal(15, 2)
+  calledCapital         Decimal   @default(0) @db.Decimal(15, 2)
+  distributions         Decimal   @default(0) @db.Decimal(15, 2)
+  fundAccess            String[]
+  quarterlyReportsEmail Boolean   @default(true)
+  capitalCallsEmail     Boolean   @default(true)
+  taxDocumentsEmail     Boolean   @default(true)
+  accreditedInvestor    Boolean   @default(false)
+  kycVerified           Boolean   @default(false)
+  kycVerifiedAt         DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  userId      String
+  action      AuditAction
+  entityType  String
+  entityId    String?
+  description String?
+  changes     Json?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  requestPath String?
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum UserRole {
+  ADMIN
+  PARTNER
+  ANALYST
+  LP
+}
+
+enum CompanyStage {
+  PROSPECT
+  QUALIFIED
+  ENGAGED
+  DUE_DILIGENCE
+  PASSED
+  PORTFOLIO
+  EXITED
+}
+
+enum DealStage {
+  INITIAL_REVIEW
+  MEETING_SCHEDULED
+  DEEP_DIVE
+  PARTNER_REVIEW
+  TERM_SHEET
+  LEGAL_DILIGENCE
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum DealSource {
+  REFERRAL
+  DIRECT_OUTREACH
+  INBOUND
+  CONFERENCE
+  ACCELERATOR
+  NETWORK
+  PORTFOLIO
+  INVESTOR_NETWORK
+  OTHER
+}
+
+enum DealPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TeamRole {
+  LEAD
+  SUPPORT
+  ADVISOR
+  BOARD_OBSERVER
+}
+
+enum ActivityType {
+  EMAIL
+  CALL
+  MEETING
+  NOTE
+  TASK
+  DEAL_UPDATE
+  INTRO
+  DOCUMENT
+}
+
+enum DocumentType {
+  PITCH_DECK
+  FINANCIAL_MODEL
+  IC_MEMO
+  TERM_SHEET
+  DD_REPORT
+  BOARD_NOTES
+  LEGAL
+  REFERENCE
+}
+
+enum AccessLevel {
+  PRIVATE
+  TEAM
+  IC_MEMBERS
+  LP_ACCESSIBLE
 }
 
 enum DocumentAction {
@@ -453,93 +528,14 @@ enum DocumentAction {
   DELETE
 }
 
-model DocumentTag {
-  documentId      String
-  document        Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  tagId           String
-  tag             Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  assignedAt      DateTime     @default(now())
-
-  @@id([documentId, tagId])
-  @@index([documentId])
-  @@index([tagId])
-}
-
-// ============================================
-// IC Memo Model (for Document references)
-// ============================================
-
-model ICMemo {
-  id              String           @id @default(cuid())
-  title           String
-  status          ICMemoStatus     @default(DRAFT)
-  recommendation  String?          // INVEST, PASS, MORE_INFO
-  requestedAmount Decimal?         @db.Decimal(15, 2)
-  proposedTerms   String?          @db.Text
-
-  // Company relationship
-  companyId       String
-  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  // Deal relationship (optional)
-  dealId          String?
-  deal            Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
-
-  // Author
-  authorId        String
-  author          User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  // Content sections stored as JSON
-  content         Json?            // Structured content for sections
-
-  // Voting
-  votingDeadline  DateTime?
-  votes           ICMemoVote[]
-
-  // Relations
-  documents       Document[]
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  submittedAt     DateTime?        // When submitted for review
-
-  @@index([authorId])
-  @@index([companyId])
-  @@index([dealId])
-  @@index([status])
-}
-
 enum ICMemoStatus {
-  DRAFT             // Being written
-  SUBMITTED         // Submitted for review
-  UNDER_REVIEW      // Being reviewed by IC
-  PENDING_VOTE      // Voting in progress
-  APPROVED          // Approved by IC
-  REJECTED          // Rejected by IC
-  WITHDRAWN         // Withdrawn by author
-}
-
-model ICMemoVote {
-  id              String           @id @default(cuid())
-  vote            VoteType
-  comment         String?          @db.Text
-
-  // IC Memo relationship
-  icMemoId        String
-  icMemo          ICMemo           @relation(fields: [icMemoId], references: [id], onDelete: Cascade)
-
-  // Voter
-  userId          String
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  @@unique([icMemoId, userId])
-  @@index([icMemoId])
-  @@index([userId])
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  PENDING_VOTE
+  APPROVED
+  REJECTED
+  WITHDRAWN
 }
 
 enum VoteType {
@@ -548,97 +544,19 @@ enum VoteType {
   ABSTAIN
 }
 
-// ============================================
-// RBAC & LP Management Models
-// ============================================
-
-model LPProfile {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // LP Information
-  entityName        String?          // Legal entity name if different from user name
-  entityType        String?          // Individual, Trust, LLC, etc.
-
-  // Capital account information
-  commitmentAmount  Decimal  @db.Decimal(15, 2)
-  calledCapital     Decimal  @db.Decimal(15, 2) @default(0)
-  distributions     Decimal  @db.Decimal(15, 2) @default(0)
-
-  // Access control - for multi-fund scenarios
-  fundAccess        String[] // Array of fund IDs LP can access
-
-  // Contact preferences
-  quarterlyReportsEmail  Boolean @default(true)
-  capitalCallsEmail      Boolean @default(true)
-  taxDocumentsEmail      Boolean @default(true)
-
-  // Administrative
-  accreditedInvestor     Boolean @default(false)
-  kycVerified            Boolean @default(false)
-  kycVerifiedAt          DateTime?
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([userId])
-}
-
-// ============================================
-// Audit Logging
-// ============================================
-
-model AuditLog {
-  id          String      @id @default(cuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // What happened
-  action      AuditAction
-  entityType  String      // "Company", "Deal", "LP", "User", etc.
-  entityId    String?     // ID of the affected entity
-
-  // Details
-  description String?     // Human-readable description
-  changes     Json?       // Store before/after values for updates
-  metadata    Json?       // Additional context (filters used, export format, etc.)
-
-  // Request context
-  ipAddress   String?
-  userAgent   String?
-  requestPath String?     // API route or page path
-
-  createdAt   DateTime    @default(now())
-
-  @@index([userId])
-  @@index([entityType, entityId])
-  @@index([action])
-  @@index([createdAt])
-}
-
 enum AuditAction {
-  // Authentication
   LOGIN
   LOGOUT
   LOGIN_FAILED
-
-  // CRUD operations
   CREATE
   READ
   UPDATE
   DELETE
-
-  // Document operations
   VIEW
   DOWNLOAD
   UPLOAD
   SHARE
-
-  // Export operations
   EXPORT
-
-  // Administrative
   ROLE_CHANGE
   PERMISSION_CHANGE
   USER_INVITE

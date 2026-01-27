@@ -3,16 +3,14 @@ import {
   DocumentMetadata,
   DocumentUploadOptions,
   DocumentFilter,
-  DocumentVersion,
   DocumentStats,
   DocumentType,
-  AccessLevel,
   FileType,
+  SourceType,
   generateStoragePath,
   getFileTypeFromMime,
   getFileTypeFromExtension,
   validateFile,
-  formatFileSize,
 } from "@/lib/types/documents";
 
 // =============================================================================
@@ -428,12 +426,18 @@ export async function getDocumentStats(): Promise<DocumentStats> {
     REFERENCE: 0,
   };
 
+  const bySource: Partial<Record<SourceType, number>> = {};
   const byCompanyMap: Map<string, { companyName: string; count: number }> = new Map();
   let totalSize = 0;
 
   documents.forEach((doc) => {
     byType[doc.documentType]++;
     totalSize += doc.fileSize;
+
+    // Track by source
+    if (doc.source) {
+      bySource[doc.source] = (bySource[doc.source] || 0) + 1;
+    }
 
     if (doc.companyId && doc.companyName) {
       const existing = byCompanyMap.get(doc.companyId);
@@ -461,6 +465,7 @@ export async function getDocumentStats(): Promise<DocumentStats> {
     totalDocuments: documents.length,
     totalSize,
     byType,
+    bySource,
     byCompany,
     recentUploads,
   };
@@ -576,6 +581,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "Acme Corp",
     dealId: "d1",
     dealName: "Series B",
+    source: "REFERRAL",
+    sourceName: "Alex Thompson",
     currentVersion: 3,
     versions: [
       {
@@ -634,6 +641,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "TechFlow",
     dealId: "d2",
     dealName: "Series A",
+    source: "ACCELERATOR",
+    sourceName: "Y Combinator",
     currentVersion: 1,
     versions: [
       {
@@ -672,6 +681,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "CloudSync",
     dealId: "d3",
     dealName: "Seed",
+    source: "PORTFOLIO_REFERRAL",
+    sourceName: "Acme Corp",
     icMemoId: "memo-1",
     currentVersion: 2,
     versions: [
@@ -721,6 +732,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "QuantumAI",
     dealId: "d4",
     dealName: "Series A",
+    source: "CO_INVESTOR",
+    sourceName: "Sequoia Capital",
     currentVersion: 2,
     versions: [
       {
@@ -767,6 +780,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     bucketName: BUCKET_NAME,
     companyId: "c3",
     companyName: "DataVault",
+    source: "CONFERENCE",
+    sourceName: "TechCrunch Disrupt",
     currentVersion: 1,
     versions: [
       {
@@ -801,6 +816,8 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     mimeType: "application/pdf",
     storagePath: "general/board_notes/q4-2023-notes.pdf",
     bucketName: BUCKET_NAME,
+    source: "UNIVERSITY",
+    sourceName: "Stanford University",
     currentVersion: 1,
     versions: [
       {

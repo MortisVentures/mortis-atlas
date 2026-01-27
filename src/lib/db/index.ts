@@ -10,6 +10,7 @@ export {
   deleteCompany,
   getCompanyStats,
   getUniqueSectors,
+  getUniqueSourceTypes,
   searchCompanies,
   type CompanyFilters,
   type PaginationParams,

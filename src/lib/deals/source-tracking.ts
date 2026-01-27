@@ -55,6 +55,7 @@ export interface DealWithSource {
 
 export interface Referrer {
   id: string;
+  contactId?: string; // Links to Contact record for navigation
   name: string;
   email?: string;
   phone?: string;
@@ -424,6 +425,7 @@ export function getSourceLabel(sourceType: SourceType): string {
 export const SAMPLE_REFERRERS: Referrer[] = [
   {
     id: "ref-1",
+    contactId: "ct-alex-thompson",
     name: "Alex Thompson",
     email: "alex@venturefund.com",
     company: "Venture Capital Partners",
@@ -450,6 +452,7 @@ export const SAMPLE_REFERRERS: Referrer[] = [
   },
   {
     id: "ref-2",
+    contactId: "ct-sarah-chen",
     name: "Sarah Chen",
     email: "sarah@techcorp.com",
     company: "TechCorp (Portfolio Co)",
@@ -475,6 +478,7 @@ export const SAMPLE_REFERRERS: Referrer[] = [
   },
   {
     id: "ref-3",
+    contactId: "ct-michael-lee",
     name: "Dr. Michael Lee",
     email: "mlee@stanford.edu",
     company: "Stanford University",
@@ -499,6 +503,7 @@ export const SAMPLE_REFERRERS: Referrer[] = [
   },
   {
     id: "ref-4",
+    // No contactId - this is a program, not an individual contact
     name: "YC Demo Day",
     email: "contact@ycombinator.com",
     company: "Y Combinator",

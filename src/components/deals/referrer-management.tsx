@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,7 +78,17 @@ export function ReferrerCard({
             {/* Info */}
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold">{referrer.name}</h3>
+                {referrer.contactId ? (
+                  <Link
+                    href={`/contacts/${referrer.contactId}?highlight=referrals`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-semibold text-foreground hover:text-tactical-400 transition-colors"
+                  >
+                    {referrer.name}
+                  </Link>
+                ) : (
+                  <h3 className="font-semibold">{referrer.name}</h3>
+                )}
                 <Badge
                   className={`${tierConfig.color} text-xs`}
                   variant="outline"
