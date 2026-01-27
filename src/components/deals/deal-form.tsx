@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +37,15 @@ import {
   dealStages,
   dealPriorities,
 } from "@/lib/validations/deal";
+
+// =============================================================================
+// COMPANY TYPE
+// =============================================================================
+
+interface CompanyOption {
+  id: string;
+  name: string;
+}
 
 // =============================================================================
 // CONSTANTS
@@ -91,6 +101,34 @@ function parseCurrencyInput(value: string): number | null {
 export function DealForm({ deal, companyId, companyName, mode }: DealFormProps) {
   const router = useRouter();
   const isEditing = mode === "edit";
+  const [companies, setCompanies] = React.useState<CompanyOption[]>([]);
+  const [isLoadingCompanies, setIsLoadingCompanies] = React.useState(false);
+
+  // Fetch companies on mount
+  React.useEffect(() => {
+    async function fetchCompanies() {
+      if (companyId && companyName) return; // Skip if company already provided
+
+      setIsLoadingCompanies(true);
+      try {
+        const response = await fetch("/api/companies?limit=100");
+        if (response.ok) {
+          const result = await response.json();
+          // API returns { data: Company[], pagination: {...} }
+          const companiesData = result.data || result;
+          setCompanies(companiesData.map((c: { id: string; name: string }) => ({
+            id: c.id,
+            name: c.name,
+          })));
+        }
+      } catch (error) {
+        console.error("Failed to fetch companies:", error);
+      } finally {
+        setIsLoadingCompanies(false);
+      }
+    }
+    fetchCompanies();
+  }, [companyId, companyName]);
 
   const schema = isEditing ? updateDealSchema : createDealSchema;
 
@@ -197,14 +235,14 @@ export function DealForm({ deal, companyId, companyName, mode }: DealFormProps) 
                 )}
               />
 
-              {/* Company (hidden or display only if pre-selected) */}
+              {/* Company Selector */}
               {companyName ? (
-                <FormItem>
-                  <FormLabel>Company</FormLabel>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">Company</label>
                   <div className="px-3 py-2 rounded-md bg-muted text-sm">
                     {companyName}
                   </div>
-                </FormItem>
+                </div>
               ) : (
                 <FormField
                   control={form.control}
@@ -214,16 +252,26 @@ export function DealForm({ deal, companyId, companyName, mode }: DealFormProps) 
                       <FormLabel>
                         Company <span className="text-destructive">*</span>
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Company ID"
-                          {...field}
-                          value={field.value ?? ""}
-                          className="bg-background"
-                        />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isLoadingCompanies}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder={isLoadingCompanies ? "Loading companies..." : "Select a company"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        Select or enter the company for this deal
+                        Select the company for this deal
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

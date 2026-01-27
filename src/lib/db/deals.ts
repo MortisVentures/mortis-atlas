@@ -64,6 +64,7 @@ export interface DealWithRelations extends Deal {
     id: string;
     firstName: string;
     lastName: string;
+    role: string | null;
   } | null;
   referrerContact: {
     id: string;
@@ -76,6 +77,17 @@ export interface DealWithRelations extends Deal {
       name: string;
     } | null;
   } | null;
+  teamMembers?: {
+    id: string;
+    role: string;
+    assignedAt: Date;
+    notes: string | null;
+    user: {
+      id: string;
+      name: string | null;
+      email: string;
+    };
+  }[];
   _count?: {
     activities: number;
     documents: number;
@@ -147,6 +159,7 @@ export async function getDeals(filters: DealFilters): Promise<DealWithRelations[
           id: true,
           firstName: true,
           lastName: true,
+          role: true,
         },
       },
       referrerContact: {
@@ -198,6 +211,7 @@ export async function getDealById(
           id: true,
           firstName: true,
           lastName: true,
+          role: true,
         },
       },
       referrerContact: {
@@ -213,6 +227,24 @@ export async function getDealById(
               name: true,
             },
           },
+        },
+      },
+      teamMembers: {
+        select: {
+          id: true,
+          role: true,
+          assignedAt: true,
+          notes: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: {
+          assignedAt: "asc",
         },
       },
       _count: {

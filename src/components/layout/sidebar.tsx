@@ -14,12 +14,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   RocketIcon,
-  TargetIcon,
   BackpackIcon,
   MixerHorizontalIcon,
   FileTextIcon,
-  BellIcon,
-  ExitIcon,
+  StarFilledIcon,
 } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,9 +60,9 @@ const navigationSections: NavSection[] = [
   {
     title: "Deal Flow",
     items: [
-      { label: "Active Deals", href: "/deals", icon: <RocketIcon className="size-5" />, badge: 12 },
-      { label: "Pipeline", href: "/pipeline", icon: <TargetIcon className="size-5" /> },
+      { label: "Active Deals", href: "/deals", icon: <RocketIcon className="size-5" /> },
       { label: "Deal Sources", href: "/deals/sources", icon: <BarChartIcon className="size-5" /> },
+      { label: "Portfolio", href: "/deals/portfolio", icon: <StarFilledIcon className="size-5" /> },
     ],
   },
   {

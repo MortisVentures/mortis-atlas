@@ -8,21 +8,25 @@
 | Phase 2 - UI Foundation | ✅ Complete | All pages and components built |
 | Phase 3 - Authentication | ✅ Complete | NextAuth.js + RBAC schema |
 | Phase 4 - CRUD Operations | 🟡 In Progress | Companies + Contacts + Deals + Docs + Kanban complete |
+| **Phase 4.5 - Security** | 🔴 **CRITICAL** | **BLOCKING** - Must complete before Phase 5 |
 | Phase 5 - Testing | 🔴 Not Started | Integration and E2E tests |
 | Phase 6 - Polish | 🔴 Not Started | UI refinements |
 
 **Operational Readiness: ~85%** - Auth + Companies + Contacts + Deals CRUD + Source Attribution + Documents + Kanban Board complete
+
+⚠️ **SECURITY BLOCKER**: Phase 4.5 must be completed before ANY public deployment or Phase 5 testing.
 
 ---
 
 ## Development Roadmap
 
 ### Priority Order (per user directive):
-1. **Authentication** - Get it usable with login
-2. **CRUD Functional** - Wire up all pages to database
-3. **Testing** - Validate data integration across pages
-4. **Polish UI** - Refine existing components
-5. **Technical Capabilities** - Add advanced features
+1. **Authentication** - Get it usable with login ✅
+2. **CRUD Functional** - Wire up all pages to database ✅
+3. **Security Hardening** - 🔴 **BLOCKING** - Complete Phase 4.5 before testing
+4. **Testing** - Validate data integration across pages (AFTER Phase 4.5)
+5. **Polish UI** - Refine existing components
+6. **Technical Capabilities** - Add advanced features
 
 ---
 
@@ -133,6 +137,225 @@ Make all pages functional with real database operations.
 - [ ] Task CRUD with due dates
 - [ ] Dashboard widget integration
 - [ ] Mark complete workflow
+
+---
+
+## Phase 4.5: Security Hardening 🔴 CRITICAL - BLOCKING
+
+### Objective
+Address critical security vulnerabilities before public deployment. Security must be architected in, not bolted on.
+
+**Status**: Security audit completed January 27, 2026. Implementation required before Phase 5.
+**Timeline**: 3-4 weeks (Weeks 1-2 BLOCKING for any production consideration)
+
+### Security Audit Summary
+A comprehensive APT-level security review identified **15 vulnerabilities** (5 CRITICAL, 5 HIGH, 5 MEDIUM) that must be resolved before hosting publicly for GP/LP access.
+
+---
+
+### Week 1-2: CRITICAL Priority (BLOCKING)
+These issues could lead to complete system compromise, data breaches, or unauthorized access to sensitive financial data.
+
+#### [ ] FIX: Middleware authorization bypass (`src/middleware.ts`)
+- **Problem**: publicApiRoutes bypass allows any authenticated user to call any API endpoint
+- **Impact**: LP can access admin endpoints, ANALYST can access all data
+- **Solution**: Remove bypass, enforce RBAC on every API route
+- **Files**: `src/middleware.ts`, all API routes
+
+#### [ ] IMPLEMENT: PostgreSQL Row-Level Security (RLS)
+- **Problem**: No database-level data isolation between users/roles
+- **Impact**: API bugs could expose all data; lateral movement possible
+- **Solution**: RLS policies on all tables enforcing role-based access
+- **Files**: New migration `prisma/migrations/YYYYMMDD_rls_policies/migration.sql`
+- **Example**:
+```sql
+CREATE POLICY "users_can_access_team_documents"
+ON documents FOR SELECT TO authenticated
+USING (
+  access_level IN ('TEAM', 'LP_ACCESSIBLE')
+  OR uploaded_by_id = current_setting('app.user_id')::text
+  OR EXISTS (
+    SELECT 1 FROM users
+    WHERE id = current_setting('app.user_id')::text
+    AND role IN ('ADMIN', 'PARTNER')
+  )
+);
+```
+
+#### [ ] ADD: API rate limiting (all endpoints)
+- **Problem**: No protection against brute force, data exfiltration, DoS
+- **Impact**: Credential stuffing, mass data export, service disruption
+- **Solution**: Implement `@upstash/ratelimit` or similar
+- **Limits**: Auth (10/15min), Read (100/min), Write (20/min), Upload (5/hour)
+- **Files**: `src/middleware.ts`, new `src/lib/rate-limit.ts`
+
+#### [ ] FIX: File upload validation (`src/app/api/documents/route.ts`)
+- **Problem**: No size limits, no type verification, no malware scanning
+- **Impact**: DoS via large files, malware upload, XSS via SVG
+- **Solution**:
+  - Max 50MB per file, 500MB per user/day
+  - Whitelist + content verification (not just MIME)
+  - Integrate ClamAV or VirusTotal
+  - Sanitize filenames (path traversal prevention)
+- **Files**: `src/app/api/documents/route.ts`, `src/lib/storage/documents.ts`
+
+#### [ ] REDUCE: JWT session lifetime
+- **Problem**: 30-day JWT = 30-day breach window
+- **Impact**: Fired employee retains access, stolen token valid for month
+- **Solution**: Reduce to 24 hours, implement refresh token rotation
+- **Files**: `src/lib/auth/config.ts`
+- **Add**: Session revocation table with revoked flag check
+
+#### [ ] IMPLEMENT: Session revocation mechanism
+- **Problem**: No way to forcibly logout users or revoke compromised sessions
+- **Impact**: Cannot respond to security incidents effectively
+- **Solution**: Database-backed session store with revocation capability
+- **Files**: Update Session model, add revocation checks in auth flow
+
+---
+
+### Week 2-3: HIGH Priority
+These issues could lead to unauthorized data access, privilege escalation, or regulatory violations.
+
+#### [ ] FIX: Insecure Direct Object References (IDOR) (all API routes)
+- **Problem**: API routes accept IDs without verifying user permissions
+- **Impact**: User A can access User B's companies/deals/documents
+- **Solution**: Add ownership/permission verification in every route
+- **Pattern**:
+```typescript
+const company = await prisma.company.findFirst({
+  where: {
+    id: params.id,
+    OR: [
+      { userId: session.user.id },
+      { user: { role: { in: ['ADMIN', 'PARTNER', 'ANALYST'] } } }
+    ]
+  }
+});
+if (!company) return NextResponse.json({ error: "Not found" }, { status: 404 });
+```
+- **Files**: All `/api/*/[id]/route.ts` files
+
+#### [ ] ADD: Comprehensive audit logging
+- **Problem**: Only LOGIN/LOGOUT logged, no data access tracking
+- **Impact**: Cannot detect breaches or investigate suspicious activity
+- **Solution**: Log ALL sensitive operations (view, edit, delete, export)
+- **Add**: `auditLog()` helper function, call in all API routes
+- **Log**: User, action, entity, IP, user-agent, timestamp
+- **Files**: New `src/lib/audit.ts`, update all API routes
+
+#### [ ] ADD: CSRF protection headers
+- **Problem**: State-changing operations lack CSRF tokens
+- **Impact**: Attacker can trick user into unauthorized actions
+- **Solution**: Configure security headers in `next.config.js`
+- **Add**: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP
+- **Files**: `next.config.js`
+
+#### [ ] ENFORCE: Password complexity requirements
+- **Problem**: No password strength validation
+- **Impact**: Weak passwords = easy compromise
+- **Solution**:
+  - Min 12 chars, must include upper/lower/number/symbol
+  - Check against haveibeenpwned API
+  - Consider adding MFA for ADMIN/PARTNER
+- **Files**: `src/app/api/auth/register/route.ts`, `src/lib/auth/config.ts`
+
+#### [ ] IMPLEMENT: LP data isolation
+- **Problem**: `canLPAccessFund()` exists but never called
+- **Impact**: LPs could access other funds' data, other LPs' info
+- **Solution**:
+  - Enforce fund access checks on every LP request
+  - Create LP-specific API endpoints with strict filtering
+  - Verify company belongs to LP's accessible funds
+- **Files**: All API routes accessed by LPs, new `src/lib/auth/lp-guard.ts`
+
+---
+
+### Week 3-4: MEDIUM Priority
+These issues reduce defense-in-depth and should be addressed before production.
+
+#### [ ] ADD: Content Security Policy (CSP)
+- Add strict CSP headers to prevent XSS attacks
+- **Files**: `next.config.js`
+
+#### [ ] RUN: Dependency security audit
+- Execute `npm audit` and fix all HIGH/CRITICAL vulnerabilities
+- Set up Snyk or Dependabot for continuous monitoring
+- Pin dependency versions in production
+
+#### [ ] ENFORCE: Email verification
+- **Problem**: `emailVerified` field exists but not enforced
+- **Solution**: Block login if email not verified
+- **Files**: `src/lib/auth/config.ts` signIn callback
+
+#### [ ] MIGRATE: Secrets to vault
+- Move all secrets from `.env` to AWS Secrets Manager or similar
+- Rotate: NEXTAUTH_SECRET (90 days), DB passwords (30 days)
+- Ensure 32+ byte cryptographic randomness for all secrets
+
+#### [ ] DOCUMENT: Security procedures
+- Create incident response playbook
+- Document data breach notification procedures
+- Write security training materials for team
+- Create security contact: security@mortisventures.com
+
+---
+
+### Pre-Production Checklist
+Before moving to Phase 5 (Testing), ALL items must be complete:
+
+- [ ] All CRITICAL vulnerabilities resolved
+- [ ] All HIGH vulnerabilities resolved
+- [ ] Penetration testing by external firm completed and passed
+- [ ] Security documentation complete
+- [ ] Team trained on secure coding practices
+- [ ] Secrets migrated to vault
+- [ ] Rate limiting active on all endpoints
+- [ ] Audit logging capturing all sensitive operations
+- [ ] RLS policies enforced at database level
+
+---
+
+### Key Security Files
+```
+src/lib/auth/rbac.ts              # Permission helpers (UPDATE)
+src/lib/auth/config.ts            # Auth config (UPDATE JWT lifetime)
+src/middleware.ts                 # Route protection (FIX authorization bypass)
+src/lib/rate-limit.ts             # Rate limiting (NEW)
+src/lib/audit.ts                  # Audit logging (NEW)
+src/lib/auth/lp-guard.ts          # LP access control (NEW)
+prisma/migrations/YYYYMMDD_rls/   # Row-Level Security policies (NEW)
+next.config.js                    # Security headers (UPDATE)
+```
+
+---
+
+### Security Testing Requirements
+Must pass before Phase 5:
+
+- **Penetration Testing**: Hire external security firm
+- **Vulnerability Scanning**: Automated tools (OWASP ZAP, Burp Suite)
+- **Authentication Testing**: Bypass attempts, session hijacking
+- **Authorization Testing**: IDOR, privilege escalation, role enforcement
+- **Input Validation**: SQL injection, XSS, file upload attacks
+- **Rate Limiting**: Verify all endpoints protected
+- **Audit Logging**: Verify all sensitive operations logged
+
+---
+
+### Acceptance Criteria
+Phase 4.5 is COMPLETE when:
+
+- ✅ External penetration test passes with no CRITICAL/HIGH findings
+- ✅ All 15 identified vulnerabilities resolved
+- ✅ Security documentation published
+- ✅ Audit logging active and tested
+- ✅ Rate limiting verified on all endpoints
+- ✅ RLS policies active and tested
+- ✅ LP data isolation verified
+- ✅ Session management secure (revocation working)
+
+**⚠️ Bottom Line**: Do NOT proceed to Phase 5 (Testing) until Phase 4.5 is complete. Testing a vulnerable system wastes time and creates false confidence. Security must be validated before functionality testing.
 
 ---
 
@@ -447,4 +670,4 @@ pnpm dlx prisma studio      # Open Prisma Studio
 
 ---
 
-Last updated: January 27, 2026 (Phase 4C - Kanban board UI complete)
+Last updated: January 27, 2026 (Phase 4.5 - Security Hardening requirements documented)
