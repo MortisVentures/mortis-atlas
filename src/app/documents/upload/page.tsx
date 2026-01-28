@@ -67,22 +67,23 @@ export default async function DocumentUploadPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <PageHeader
-        icon={<UploadIcon className="size-5 text-white" />}
-        iconClassName="bg-gradient-to-br from-blue-500 to-purple-500"
+        icon={<div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500"><UploadIcon className="size-5 text-white" /></div>}
         title="Upload Document"
         description={
           company
             ? `Upload a document for ${company.name}`
             : "Upload and organize a new document"
         }
-        backHref="/documents"
-        backLabel="Back to Documents"
+        breadcrumbs={[
+          { label: "Documents", href: "/documents" },
+          { label: "Upload" },
+        ]}
       />
 
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-2xl mx-auto">
           <DocumentUploadForm
-            company={company}
+            company={company ? { ...company, sourceType: company.sourceType ?? undefined } : null}
             deal={deal}
             variant="page"
           />

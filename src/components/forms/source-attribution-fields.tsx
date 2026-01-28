@@ -8,7 +8,6 @@ import {
   PersonIcon,
   MagnifyingGlassIcon,
   Cross2Icon,
-  CheckIcon,
   CalendarIcon,
 } from "@radix-ui/react-icons";
 
@@ -29,8 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+// Badge not used in this file
+// cn not used in this file
 
 // =============================================================================
 // TYPES
@@ -88,7 +87,7 @@ interface ContactSearchProps {
 }
 
 function ContactSearch({
-  value,
+  value: _value,
   onChange,
   selectedContact,
   disabled,

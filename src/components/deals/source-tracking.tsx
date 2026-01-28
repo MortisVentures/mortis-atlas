@@ -13,12 +13,11 @@ import {
   ArchiveIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
-  CheckIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -210,7 +209,7 @@ export function SourceInput({
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-tactical-400 hover:bg-muted transition-colors"
                             >
                               <PlusIcon className="size-4" />
-                              Add "{referrerSearch}" as new referrer
+                              Add &quot;{referrerSearch}&quot; as new referrer
                             </button>
                           </div>
                         </motion.div>
@@ -458,7 +457,7 @@ export function SourceSummaryCard({ source, dealCount = 0, conversionRate = 0, o
 
   return (
     <Card
-      variant="neumorphic"
+      variant="raised"
       className={cn("p-4 cursor-pointer transition-all hover:shadow-md", onClick && "hover:scale-[1.02]")}
       onClick={onClick}
     >

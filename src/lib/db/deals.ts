@@ -324,7 +324,7 @@ export async function updateDeal(
   }
 
   // Handle stage change
-  let updateData: Prisma.DealUpdateInput = { ...data };
+  const updateData: Prisma.DealUpdateInput = { ...data };
 
   if (data.stage && data.stage !== existing.stage) {
     // Add to stage history
@@ -698,3 +698,4 @@ export const DEAL_PRIORITY_CONFIG: Record<DealPriority, {
     color: "bg-slate-500/20 text-slate-400 border-slate-500/30",
   },
 };
+

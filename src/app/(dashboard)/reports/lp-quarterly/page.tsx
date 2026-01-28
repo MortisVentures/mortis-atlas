@@ -2,15 +2,13 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   DownloadIcon,
   EnvelopeClosedIcon,
   GearIcon,
-  CheckCircledIcon,
-  CrossCircledIcon,
   TriangleUpIcon,
   TriangleDownIcon,
   MinusIcon,
@@ -19,7 +17,6 @@ import {
   BarChartIcon,
   FileTextIcon,
   EyeOpenIcon,
-  Share1Icon,
   ArchiveIcon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -31,7 +28,7 @@ import {
   AreaChart,
 } from "@tremor/react";
 
-import { DistributionModal, DistributionTracking, ReportArchiveList } from "@/components/reports/report-distribution";
+import { DistributionModal } from "@/components/reports/report-distribution";
 import { downloadLPReportPDF } from "@/components/reports/lp-report-pdf";
 
 import {
@@ -358,7 +355,7 @@ function FundOverviewSection({ data, isExpanded }: FundOverviewSectionProps) {
         />
       </div>
 
-      <Card variant="neumorphic" className="p-4">
+      <Card variant="raised" className="p-4">
         <h4 className="text-sm font-medium text-zinc-400 mb-4">Capital Deployment</h4>
         <div className="space-y-4">
           <div>
@@ -450,7 +447,7 @@ function PerformanceSummarySection({ performance, benchmarks, isExpanded }: Perf
       </div>
 
       {/* Value Bridge */}
-      <Card variant="neumorphic" className="p-4 mb-6">
+      <Card variant="raised" className="p-4 mb-6">
         <h4 className="text-sm font-medium text-zinc-400 mb-4">Value Attribution</h4>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center p-4 bg-zinc-900/50 rounded-lg">
@@ -469,7 +466,7 @@ function PerformanceSummarySection({ performance, benchmarks, isExpanded }: Perf
       </Card>
 
       {/* Benchmark Comparison */}
-      <Card variant="neumorphic" className="p-4">
+      <Card variant="raised" className="p-4">
         <h4 className="text-sm font-medium text-zinc-400 mb-4">Benchmark Comparison</h4>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -559,7 +556,7 @@ function PortfolioUpdateSection({ portfolio, activity, stats, isExpanded }: Port
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* New Investments */}
         {activity.newInvestments.length > 0 && (
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <h4 className="text-sm font-medium text-emerald-400 mb-3 flex items-center gap-2">
               <TriangleUpIcon className="w-4 h-4" />
               New Investments ({activity.newInvestments.length})
@@ -585,7 +582,7 @@ function PortfolioUpdateSection({ portfolio, activity, stats, isExpanded }: Port
 
         {/* Markups */}
         {activity.markups.length > 0 && (
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <h4 className="text-sm font-medium text-cyan-400 mb-3 flex items-center gap-2">
               <TriangleUpIcon className="w-4 h-4" />
               Markups ({activity.markups.length})
@@ -608,7 +605,7 @@ function PortfolioUpdateSection({ portfolio, activity, stats, isExpanded }: Port
 
         {/* Markdowns */}
         {activity.markdowns.length > 0 && (
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <h4 className="text-sm font-medium text-red-400 mb-3 flex items-center gap-2">
               <TriangleDownIcon className="w-4 h-4" />
               Markdowns ({activity.markdowns.length})
@@ -632,7 +629,7 @@ function PortfolioUpdateSection({ portfolio, activity, stats, isExpanded }: Port
 
       {/* Exits */}
       {activity.exits.length > 0 && (
-        <Card variant="neumorphic" className="p-4 mb-6">
+        <Card variant="raised" className="p-4 mb-6">
           <h4 className="text-sm font-medium text-zinc-400 mb-3">Exits This Quarter</h4>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -670,7 +667,7 @@ function PortfolioUpdateSection({ portfolio, activity, stats, isExpanded }: Port
       )}
 
       {/* Full Portfolio Table */}
-      <Card variant="neumorphic" className="p-4">
+      <Card variant="raised" className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h4 className="text-sm font-medium text-zinc-400">Portfolio Companies</h4>
           <Button
@@ -781,7 +778,7 @@ function DealActivitySection({ activity, isExpanded }: DealActivitySectionProps)
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Deal Funnel */}
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <h4 className="text-sm font-medium text-zinc-400 mb-4">Deal Funnel</h4>
           <AreaChart
             data={pipelineData}
@@ -798,7 +795,7 @@ function DealActivitySection({ activity, isExpanded }: DealActivitySectionProps)
         </Card>
 
         {/* Top Sectors */}
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <h4 className="text-sm font-medium text-zinc-400 mb-4">Deal Flow by Sector</h4>
           <div className="space-y-3">
             {activity.topSectors.map((sector, index) => {
@@ -826,7 +823,7 @@ function DealActivitySection({ activity, isExpanded }: DealActivitySectionProps)
       </div>
 
       {/* Additional Stats */}
-      <Card variant="neumorphic" className="p-4 mt-6">
+      <Card variant="raised" className="p-4 mt-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-zinc-500 mb-1">Average Check Size</p>
@@ -854,20 +851,13 @@ interface UpcomingEventsSectionProps {
 }
 
 function UpcomingEventsSection({ events, isExpanded }: UpcomingEventsSectionProps) {
-  const eventsByType = events.reduce((acc, event) => {
-    const type = event.type;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(event);
-    return acc;
-  }, {} as Record<string, typeof events>);
-
   return (
     <SectionWrapper title="Upcoming Events" id="events" isExpanded={isExpanded}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {events.map((event) => {
           const config = getEventTypeConfig(event.type);
           return (
-            <Card key={event.id} variant="neumorphic" className="p-4">
+            <Card key={event.id} variant="raised" className="p-4">
               <div className="flex items-start justify-between mb-2">
                 <Badge className={config.color}>{config.label}</Badge>
                 <span className="text-xs text-zinc-500">{event.expectedDate}</span>
@@ -910,13 +900,13 @@ function MarketCommentarySection({ commentary, isExpanded }: MarketCommentarySec
   return (
     <SectionWrapper title="Market Commentary" id="market" isExpanded={isExpanded}>
       {/* Summary */}
-      <Card variant="neumorphic" className="p-4 mb-6">
+      <Card variant="raised" className="p-4 mb-6">
         <h4 className="text-sm font-medium text-zinc-400 mb-2">Executive Summary</h4>
         <p className="text-sm leading-relaxed">{commentary.summary}</p>
       </Card>
 
       {/* Sector Trends */}
-      <Card variant="neumorphic" className="p-4 mb-6">
+      <Card variant="raised" className="p-4 mb-6">
         <h4 className="text-sm font-medium text-zinc-400 mb-4">Sector Trends</h4>
         <div className="space-y-4">
           {commentary.sectorTrends.map((sector) => {
@@ -940,13 +930,13 @@ function MarketCommentarySection({ commentary, isExpanded }: MarketCommentarySec
       </Card>
 
       {/* Competitive Landscape */}
-      <Card variant="neumorphic" className="p-4 mb-6">
+      <Card variant="raised" className="p-4 mb-6">
         <h4 className="text-sm font-medium text-zinc-400 mb-2">Competitive Landscape</h4>
         <p className="text-sm leading-relaxed">{commentary.competitiveLandscape}</p>
       </Card>
 
       {/* Regulatory Updates */}
-      <Card variant="neumorphic" className="p-4 mb-6">
+      <Card variant="raised" className="p-4 mb-6">
         <h4 className="text-sm font-medium text-zinc-400 mb-3">Regulatory Updates</h4>
         <ul className="space-y-2">
           {commentary.regulatoryUpdates.map((update, index) => (
@@ -959,7 +949,7 @@ function MarketCommentarySection({ commentary, isExpanded }: MarketCommentarySec
       </Card>
 
       {/* Outlook */}
-      <Card variant="neumorphic" className="p-4">
+      <Card variant="raised" className="p-4">
         <h4 className="text-sm font-medium text-zinc-400 mb-2">Outlook</h4>
         <p className="text-sm leading-relaxed">{commentary.outlook}</p>
       </Card>
@@ -1146,7 +1136,7 @@ interface MetricBoxProps {
 function MetricBox({ label, value, sublabel, variant = "default" }: MetricBoxProps) {
   return (
     <Card
-      variant="neumorphic"
+      variant="raised"
       className={`p-4 ${variant === "highlight" ? "border-cyan-500/30 bg-cyan-500/5" : ""}`}
     >
       <p className="text-xs text-zinc-500 mb-1">{label}</p>

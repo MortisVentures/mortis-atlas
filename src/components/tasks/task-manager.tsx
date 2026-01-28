@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarIcon,
   PersonIcon,
-  ClockIcon,
   ExclamationTriangleIcon,
   PlusIcon,
   MagnifyingGlassIcon,
@@ -23,14 +22,10 @@ import { cn } from "@/lib/utils";
 import {
   Task,
   TaskList,
-  TaskCard,
   TaskStatus,
   TaskPriority,
   TaskType,
-  priorityConfig,
-  statusConfig,
   taskTypeConfig,
-  formatDate,
   isOverdue,
 } from "./task-card";
 
@@ -38,7 +33,7 @@ import {
 // SAMPLE DATA
 // =============================================================================
 
-const SAMPLE_USERS = [
+const _SAMPLE_USERS = [
   { id: "u1", name: "Sarah Chen", avatar: null },
   { id: "u2", name: "Michael Rodriguez", avatar: null },
   { id: "u3", name: "Emily Thompson", avatar: null },
@@ -391,19 +386,19 @@ export function TaskManager({
     <div className="space-y-6">
       {/* Stats Bar */}
       <div className="grid grid-cols-4 gap-4">
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="text-2xl font-bold text-foreground">{stats.myTasks}</div>
           <div className="text-xs text-muted-foreground">My Tasks</div>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="text-2xl font-bold text-red-400">{stats.overdueCount}</div>
           <div className="text-xs text-muted-foreground">Overdue</div>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="text-2xl font-bold text-amber-400">{stats.highPriority}</div>
           <div className="text-xs text-muted-foreground">High Priority</div>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="text-2xl font-bold text-tactical-400">{stats.dueToday}</div>
           <div className="text-xs text-muted-foreground">Due Today</div>
         </Card>
@@ -602,7 +597,7 @@ function ByCompanyView({
   return (
     <div className="space-y-6">
       {tasksByCompany.map(([companyId, { name, tasks }]) => (
-        <Card key={companyId} variant="neumorphic">
+        <Card key={companyId} variant="raised">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -724,3 +719,4 @@ function CalendarView({
     </div>
   );
 }
+

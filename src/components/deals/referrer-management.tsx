@@ -13,7 +13,6 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   CheckIcon,
-  Cross2Icon,
   StarFilledIcon,
   StarIcon,
   ChatBubbleIcon,
@@ -22,7 +21,6 @@ import {
   BackpackIcon,
   ClockIcon,
   CheckCircledIcon,
-  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import {
   Referrer,
@@ -64,7 +62,7 @@ export function ReferrerCard({
       exit={{ opacity: 0, y: -20 }}
     >
       <Card
-        variant="neumorphic"
+        variant="raised"
         className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -237,7 +235,7 @@ export function ReferrerCard({
                         <Button
                           key={tier}
                           size="sm"
-                          variant={referrer.tier === tier ? "default" : "outline"}
+                          variant={referrer.tier === tier ? "primary" : "outline"}
                           onClick={(e) => {
                             e.stopPropagation();
                             onUpdateTier?.(referrer, tier);
@@ -333,7 +331,7 @@ export function ReferrerList({
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant={tierFilter === "ALL" ? "default" : "outline"}
+            variant={tierFilter === "ALL" ? "primary" : "outline"}
             onClick={() => setTierFilter("ALL")}
           >
             All
@@ -342,7 +340,7 @@ export function ReferrerList({
             <Button
               key={tier}
               size="sm"
-              variant={tierFilter === tier ? "default" : "outline"}
+              variant={tierFilter === tier ? "primary" : "outline"}
               onClick={() => setTierFilter(tier)}
               className={tierFilter === tier ? referrerTierConfig[tier].color : ""}
             >
@@ -377,7 +375,7 @@ export function ReferrerList({
         </AnimatePresence>
 
         {sortedReferrers.length === 0 && (
-          <Card variant="neumorphic" className="p-8 text-center">
+          <Card variant="raised" className="p-8 text-center">
             <PersonIcon className="w-8 h-8 mx-auto text-zinc-500 mb-2" />
             <p className="text-zinc-400">No referrers found</p>
           </Card>
@@ -445,7 +443,7 @@ export function ThankYouAutomation({
   return (
     <div className="space-y-6">
       {/* Pending Thank Yous */}
-      <Card variant="neumorphic" className="p-6">
+      <Card variant="raised" className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
@@ -530,7 +528,7 @@ export function ThankYouAutomation({
       </Card>
 
       {/* Recent Thank Yous */}
-      <Card variant="neumorphic" className="p-6">
+      <Card variant="raised" className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
             <CheckCircledIcon className="w-4 h-4 text-emerald-400" />
@@ -674,7 +672,7 @@ export function ReferralRewards({
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
               <BackpackIcon className="w-5 h-5 text-purple-400" />
@@ -686,7 +684,7 @@ export function ReferralRewards({
           </div>
         </Card>
 
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <CheckCircledIcon className="w-5 h-5 text-emerald-400" />
@@ -700,7 +698,7 @@ export function ReferralRewards({
           </div>
         </Card>
 
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <ClockIcon className="w-5 h-5 text-amber-400" />
@@ -714,14 +712,14 @@ export function ReferralRewards({
       </div>
 
       {/* Rewards List */}
-      <Card variant="neumorphic" className="p-6">
+      <Card variant="raised" className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Reward History</h3>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
               <Button
                 size="sm"
-                variant={filter === "ALL" ? "default" : "outline"}
+                variant={filter === "ALL" ? "primary" : "outline"}
                 onClick={() => setFilter("ALL")}
               >
                 All
@@ -731,7 +729,7 @@ export function ReferralRewards({
                   <Button
                     key={status}
                     size="sm"
-                    variant={filter === status ? "default" : "outline"}
+                    variant={filter === status ? "primary" : "outline"}
                     onClick={() => setFilter(status)}
                   >
                     {rewardStatusConfig[status].label}
@@ -845,19 +843,19 @@ export function ReferrerManagementDashboard({
     <div className="space-y-6">
       {/* Header Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <p className="text-xs text-zinc-500 mb-1">Total Referrers</p>
           <p className="text-2xl font-bold">{totalReferrers}</p>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <p className="text-xs text-zinc-500 mb-1">Active Referrers</p>
           <p className="text-2xl font-bold">{activeReferrers}</p>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <p className="text-xs text-zinc-500 mb-1">Gold/Platinum</p>
           <p className="text-2xl font-bold">{goldPlatinum}</p>
         </Card>
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <p className="text-xs text-zinc-500 mb-1">Total Referrals</p>
           <p className="text-2xl font-bold">{totalReferrals}</p>
         </Card>
@@ -866,21 +864,21 @@ export function ReferrerManagementDashboard({
       {/* Tab Navigation */}
       <div className="flex gap-2 border-b border-zinc-800 pb-2">
         <Button
-          variant={activeTab === "list" ? "default" : "ghost"}
+          variant={activeTab === "list" ? "primary" : "ghost"}
           onClick={() => setActiveTab("list")}
         >
           <PersonIcon className="w-4 h-4 mr-2" />
           Referrer Directory
         </Button>
         <Button
-          variant={activeTab === "thankyou" ? "default" : "ghost"}
+          variant={activeTab === "thankyou" ? "primary" : "ghost"}
           onClick={() => setActiveTab("thankyou")}
         >
           <EnvelopeClosedIcon className="w-4 h-4 mr-2" />
           Thank You Automation
         </Button>
         <Button
-          variant={activeTab === "rewards" ? "default" : "ghost"}
+          variant={activeTab === "rewards" ? "primary" : "ghost"}
           onClick={() => setActiveTab("rewards")}
         >
           <BackpackIcon className="w-4 h-4 mr-2" />

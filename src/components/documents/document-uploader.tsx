@@ -15,7 +15,7 @@ import {
   ChevronDownIcon,
 } from "@radix-ui/react-icons";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+// Card components not used in this file
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,7 @@ import {
   formatFileSize,
   MAX_FILE_SIZE,
 } from "@/lib/types/documents";
-import { uploadDocument, UploadProgress, UploadResult } from "@/lib/storage/documents";
+import { uploadDocument, UploadResult } from "@/lib/storage/documents";
 
 // =============================================================================
 // TYPES
@@ -436,7 +436,7 @@ interface DropzoneAreaProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onClick: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   onFileInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -509,11 +509,11 @@ interface FileQueueItemProps {
   item: UploadQueueItem;
   onRemove: () => void;
   onUpdateName: (name: string) => void;
-  onUpdateOptions: (options: Partial<DocumentUploadOptions>) => void;
+  onUpdateOptions: (_options: Partial<DocumentUploadOptions>) => void;
   disabled: boolean;
 }
 
-function FileQueueItem({ item, onRemove, onUpdateName, onUpdateOptions, disabled }: FileQueueItemProps) {
+function FileQueueItem({ item, onRemove, onUpdateName, onUpdateOptions: _onUpdateOptions, disabled }: FileQueueItemProps) {
   const [isEditing, setIsEditing] = React.useState(false);
 
   return (

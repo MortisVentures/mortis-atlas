@@ -76,7 +76,7 @@ export default function SourceAttributionPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
               <RocketIcon className="w-5 h-5 text-cyan-400" />
@@ -88,7 +88,7 @@ export default function SourceAttributionPage() {
           </div>
         </Card>
 
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
               <BarChartIcon className="w-5 h-5 text-emerald-400" />
@@ -102,7 +102,7 @@ export default function SourceAttributionPage() {
           </div>
         </Card>
 
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
               <TargetIcon className="w-5 h-5 text-purple-400" />
@@ -114,7 +114,7 @@ export default function SourceAttributionPage() {
           </div>
         </Card>
 
-        <Card variant="neumorphic" className="p-4">
+        <Card variant="raised" className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
               <MagnifyingGlassIcon className="w-5 h-5 text-amber-400" />
@@ -136,7 +136,7 @@ export default function SourceAttributionPage() {
           return (
             <Button
               key={tab.id}
-              variant={activeTab === tab.id ? "default" : "ghost"}
+              variant={activeTab === tab.id ? "primary" : "ghost"}
               onClick={() => setActiveTab(tab.id)}
               className="relative"
             >
@@ -163,7 +163,7 @@ export default function SourceAttributionPage() {
         {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Quick Source Breakdown */}
-            <Card variant="neumorphic" className="p-6">
+            <Card variant="raised" className="p-6">
               <h3 className="font-semibold mb-4">Source Performance Overview</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {sourceMetrics.slice(0, 8).map((metric) => {
@@ -219,7 +219,7 @@ export default function SourceAttributionPage() {
             </Card>
 
             {/* Top Referrers Preview */}
-            <Card variant="neumorphic" className="p-6">
+            <Card variant="raised" className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold">Top Referrers</h3>
                 <Button
@@ -266,7 +266,7 @@ export default function SourceAttributionPage() {
             </Card>
 
             {/* Source Mix Chart Placeholder */}
-            <Card variant="neumorphic" className="p-6">
+            <Card variant="raised" className="p-6">
               <h3 className="font-semibold mb-4">Deal Flow by Source</h3>
               <div className="h-[300px] flex items-center justify-center">
                 <div className="text-center">
@@ -294,11 +294,11 @@ export default function SourceAttributionPage() {
         {activeTab === "funnel" && (
           <div className="space-y-6">
             {/* Source Selector */}
-            <Card variant="neumorphic" className="p-4">
+            <Card variant="raised" className="p-4">
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  variant={selectedSource === null ? "default" : "outline"}
+                  variant={selectedSource === null ? "primary" : "outline"}
                   onClick={() => setSelectedSource(null)}
                 >
                   All Sources
@@ -307,7 +307,7 @@ export default function SourceAttributionPage() {
                   <Button
                     key={type}
                     size="sm"
-                    variant={selectedSource === type ? "default" : "outline"}
+                    variant={selectedSource === type ? "primary" : "outline"}
                     onClick={() => setSelectedSource(type)}
                     className={
                       selectedSource === type ? sourceTypeConfig[type].color : ""

@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
-  useSidebar,
   SIDEBAR_WIDTH_COLLAPSED,
-  SIDEBAR_WIDTH_EXPANDED,
   MOBILE_BREAKPOINT,
 } from "./sidebar";
 
@@ -83,12 +81,12 @@ const backdropVariants = {
 // SIDEBAR CONTEXT PROVIDER WRAPPER
 // =============================================================================
 
-interface SidebarProviderProps {
+interface _SidebarProviderProps {
   children: React.ReactNode;
   defaultCollapsed?: boolean;
 }
 
-function SidebarProvider({ children, defaultCollapsed }: SidebarProviderProps) {
+function _SidebarProvider({ children, defaultCollapsed }: _SidebarProviderProps) {
   return (
     <>
       <Sidebar defaultCollapsed={defaultCollapsed} />

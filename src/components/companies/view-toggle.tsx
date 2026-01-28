@@ -63,7 +63,7 @@ function useViewMode(
   defaultValue: ViewMode = "table"
 ): [ViewMode, (view: ViewMode) => void] {
   const [viewMode, setViewMode] = React.useState<ViewMode>(defaultValue);
-  const [isInitialized, setIsInitialized] = React.useState(false);
+  const [_isInitialized, setIsInitialized] = React.useState(false);
 
   // Load from localStorage on mount
   React.useEffect(() => {

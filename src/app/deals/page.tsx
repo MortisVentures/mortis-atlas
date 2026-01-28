@@ -30,7 +30,6 @@ import { useDealsKanban } from "@/hooks/use-deals-kanban";
 import { KanbanBoard } from "@/components/deals/kanban-board";
 import {
   STAGE_CONFIG,
-  PRIORITY_CONFIG,
   SOURCE_CONFIG,
   calculatePipelineMetrics,
   formatCurrency,

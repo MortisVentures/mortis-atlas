@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { AreaChart, LineChart } from "@tremor/react";
 import {
   ExternalLinkIcon,
   Pencil1Icon,
@@ -17,7 +16,6 @@ import {
   CheckIcon,
   ChevronRightIcon,
   ChevronDownIcon,
-  UploadIcon,
   EnvelopeClosedIcon,
   VideoIcon,
   StackIcon,
@@ -375,7 +373,7 @@ interface CompanyDetailViewProps {
 }
 
 export function CompanyDetailView({ company }: CompanyDetailViewProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const [activeTab, setActiveTab] = React.useState<"overview" | "team" | "activity" | "notes">("overview");
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({
     metrics: true,

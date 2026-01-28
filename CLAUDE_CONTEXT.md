@@ -91,8 +91,8 @@ Make all pages functional with real database operations.
   - Pipeline metrics: total deals, pipeline value, weighted value, high priority
   - Stage quick filters with counts
   - Key files: `src/lib/deals/pipeline-utils.ts`, `src/hooks/use-deals-kanban.ts`, `src/components/deals/kanban-board.tsx`
-- [ ] Deal detail page with financials
-- [ ] Stage progression with history tracking
+- [x] Deal detail page with financials (Phase 4D - Jan 27, 2026)
+- [x] Stage progression with history tracking (timeline UI)
 - [x] Source attribution integration
 - [x] Source attribution API endpoints (Phase 2D complete):
   - GET /api/contacts/[id]/referrals - Deals/companies referred by contact with metrics

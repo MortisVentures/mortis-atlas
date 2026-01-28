@@ -410,7 +410,7 @@ export function FloatingActionButton({
   className,
 }: FloatingActionButtonProps) {
   const router = useRouter();
-  const colors = colorConfig[action.color];
+  const _colors = colorConfig[action.color];
 
   const handleClick = () => {
     if (onClick) {

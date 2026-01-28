@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import {
   BarChart,
   DonutChart,
-  AreaChart,
-  BarList,
 } from "@tremor/react";
 import {
   BarChartIcon,
@@ -25,16 +23,12 @@ import { cn } from "@/lib/utils";
 import {
   SourceType,
   DealWithSource,
-  SourceMetrics,
-  SourceFunnel,
-  EventEffectiveness,
   sourceTypeConfig,
   calculateSourceMetrics,
   calculateFunnelBySource,
   calculateEventEffectiveness,
   calculateQualityScoreBySource,
   formatDaysToClose,
-  DEAL_STAGES,
 } from "@/lib/deals/source-tracking";
 
 // =============================================================================
@@ -124,7 +118,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
 
       {/* Conversion by Source */}
       <div className="grid grid-cols-2 gap-6">
-        <Card variant="neumorphic">
+        <Card variant="raised">
           <CardHeader>
             <CardTitle>Conversion Rate by Source</CardTitle>
           </CardHeader>
@@ -141,7 +135,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
           </CardContent>
         </Card>
 
-        <Card variant="neumorphic">
+        <Card variant="raised">
           <CardHeader>
             <CardTitle>Deal Distribution by Source</CardTitle>
           </CardHeader>
@@ -159,7 +153,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
       </div>
 
       {/* Source Performance Table */}
-      <Card variant="neumorphic">
+      <Card variant="raised">
         <CardHeader>
           <CardTitle>Source Performance Comparison</CardTitle>
         </CardHeader>
@@ -225,7 +219,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
 
       {/* Time to Close & Quality */}
       <div className="grid grid-cols-2 gap-6">
-        <Card variant="neumorphic">
+        <Card variant="raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ClockIcon className="size-5 text-amber-400" />
@@ -245,7 +239,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
           </CardContent>
         </Card>
 
-        <Card variant="neumorphic">
+        <Card variant="raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TargetIcon className="size-5 text-cyan-400" />
@@ -268,7 +262,7 @@ export function SourceAnalyticsDashboard({ deals }: SourceAnalyticsDashboardProp
 
       {/* Event Effectiveness */}
       {eventEffectiveness.length > 0 && (
-        <Card variant="neumorphic">
+        <Card variant="raised">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="size-5 text-purple-400" />
@@ -349,7 +343,7 @@ export function SourceFunnelVisualization({ deals, sourceType, onClose }: Source
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <Card variant="neumorphic">
+      <Card variant="raised">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -422,7 +416,7 @@ function MetricCard({ title, value, subtitle, icon, color }: MetricCardProps) {
   };
 
   return (
-    <Card variant="neumorphic" className="p-4">
+    <Card variant="raised" className="p-4">
       <div className="flex items-center gap-3">
         <div className={cn("w-10 h-10 rounded-atlas-sm flex items-center justify-center", colorClasses[color])}>
           {icon}

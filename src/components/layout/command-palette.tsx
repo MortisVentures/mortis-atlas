@@ -18,14 +18,10 @@ import { toast } from "sonner";
 
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
-  CommandLoading,
 } from "@/components/ui/command";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -308,7 +304,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               <div className="py-12 text-center">
                 <MagnifyingGlassIcon className="mx-auto size-8 text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">
-                  No results found for "{query}"
+                  No results found for &quot;{query}&quot;
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Try searching for companies, contacts, or deals

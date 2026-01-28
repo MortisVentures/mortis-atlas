@@ -123,7 +123,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: "Validation error",
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       );

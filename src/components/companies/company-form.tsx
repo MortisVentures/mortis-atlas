@@ -74,9 +74,9 @@ export function CompanyForm({ company, mode }: CompanyFormProps) {
   // Use appropriate schema based on mode
   const schema = isEditing ? updateCompanySchema : createCompanySchema;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<CreateCompanyInput | UpdateCompanyInput>({
-    resolver: zodResolver(schema) as any,
+    // @ts-expect-error - zodResolver type mismatch with union types
+    resolver: zodResolver(schema),
     defaultValues: {
       name: company?.name ?? "",
       website: company?.website ?? "",

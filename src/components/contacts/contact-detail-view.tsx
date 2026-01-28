@@ -308,7 +308,7 @@ interface ContactDetailViewProps {
 }
 
 export function ContactDetailView({ contact, highlightSection }: ContactDetailViewProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const referralSectionRef = React.useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = React.useState<"overview" | "deals" | "activity" | "notes">("overview");
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({

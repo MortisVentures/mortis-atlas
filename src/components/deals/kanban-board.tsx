@@ -85,7 +85,7 @@ export function KanbanBoard({
   );
 
   // Handle drag over (for visual feedback)
-  const handleDragOver = React.useCallback((event: DragOverEvent) => {
+  const handleDragOver = React.useCallback((_event: DragOverEvent) => {
     // Can add visual feedback here if needed
   }, []);
 

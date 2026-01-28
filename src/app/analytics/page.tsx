@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AreaChart, BarChart, DonutChart } from "@tremor/react";
+import { BarChart, DonutChart } from "@tremor/react";
 
 import {
   DashboardLayout,
@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
                 />
               </div>
               <div className="flex-1 space-y-2">
-                {sectorPerformance.map((sector, i) => (
+                {sectorPerformance.map((sector) => (
                   <div key={sector.name} className="flex items-center justify-between text-sm">
                     <span>{sector.name}</span>
                     <span className="font-mono">{sector.value}%</span>

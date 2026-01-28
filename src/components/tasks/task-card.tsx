@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
-  ClockIcon,
   CalendarIcon,
   PersonIcon,
   DotsHorizontalIcon,
@@ -13,15 +12,12 @@ import {
   TrashIcon,
   ChevronRightIcon,
   ChevronDownIcon,
-  PlusIcon,
   FileTextIcon,
-  ExternalLinkIcon,
   ReloadIcon,
   BellIcon,
 } from "@radix-ui/react-icons";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // =============================================================================

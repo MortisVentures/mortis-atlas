@@ -14,10 +14,7 @@ import {
   TableIcon,
   CheckCircledIcon,
   ReloadIcon,
-  ChevronDownIcon,
-  LinkBreak2Icon,
   Link2Icon,
-  BuildingIcon,
 } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
@@ -149,11 +146,12 @@ export function DocumentUploadForm({
   const [selectedDeal, setSelectedDeal] = React.useState<Deal | null>(
     initialDeal || null
   );
-  const [isLoadingCompanies, setIsLoadingCompanies] = React.useState(false);
+  const [_isLoadingCompanies, setIsLoadingCompanies] = React.useState(false);
   const [isLoadingDeals, setIsLoadingDeals] = React.useState(false);
 
   // Form
   const form = useForm<DocumentUploadFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(documentUploadSchema) as any,
     defaultValues: {
       name: "",

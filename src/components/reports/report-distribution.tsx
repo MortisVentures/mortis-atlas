@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,9 @@ import {
   EnvelopeClosedIcon,
   CheckCircledIcon,
   CrossCircledIcon,
-  ClockIcon,
   PlusIcon,
-  TrashIcon,
   EyeOpenIcon,
   DownloadIcon,
-  Share1Icon,
   ArchiveIcon,
   PersonIcon,
   LockClosedIcon,
@@ -415,7 +412,7 @@ export function DistributionTracking({ distributions = SAMPLE_DISTRIBUTION_HISTO
   const openRate = totalSent > 0 ? (opened / totalSent) * 100 : 0;
 
   return (
-    <Card variant="neumorphic" className="p-6">
+    <Card variant="raised" className="p-6">
       <h3 className="font-semibold mb-4">Distribution Tracking</h3>
 
       {/* Stats */}
@@ -499,7 +496,7 @@ export function ReportArchiveList({
   onView,
 }: ReportArchiveListProps) {
   return (
-    <Card variant="neumorphic" className="p-6">
+    <Card variant="raised" className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">Report Archive</h3>
         <Badge variant="outline">{archives.length} reports</Badge>
@@ -556,14 +553,14 @@ interface LPManagementProps {
   lps?: LPContact[];
   onAddLP?: () => void;
   onEditLP?: (lp: LPContact) => void;
-  onRemoveLP?: (lp: LPContact) => void;
+  _onRemoveLP?: (lp: LPContact) => void;
 }
 
 export function LPManagement({
   lps = SAMPLE_LPS,
   onAddLP,
   onEditLP,
-  onRemoveLP,
+  _onRemoveLP,
 }: LPManagementProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -590,7 +587,7 @@ export function LPManagement({
   };
 
   return (
-    <Card variant="neumorphic" className="p-6">
+    <Card variant="raised" className="p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-semibold">LP Directory</h3>

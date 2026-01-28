@@ -143,9 +143,9 @@ export default function DocumentsPage() {
     setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
   };
 
-  const handleUploadComplete = (results: any[]) => {
+  const handleUploadComplete = (results: { success: boolean; document?: DocumentMetadata }[]) => {
     const successfulUploads = results
-      .filter((r) => r.success && r.document)
+      .filter((r): r is { success: boolean; document: DocumentMetadata } => r.success && !!r.document)
       .map((r) => r.document);
     setDocuments((prev) => [...successfulUploads, ...prev]);
     setShowUploadModal(false);
@@ -182,7 +182,7 @@ export default function DocumentsPage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-4 gap-4 mb-8"
         >
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-atlas-sm bg-blue-500/20 flex items-center justify-center">
                 <FileIcon className="size-5 text-blue-400" />
@@ -194,7 +194,7 @@ export default function DocumentsPage() {
             </div>
           </Card>
 
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-atlas-sm bg-purple-500/20 flex items-center justify-center">
                 <BarChartIcon className="size-5 text-purple-400" />
@@ -206,7 +206,7 @@ export default function DocumentsPage() {
             </div>
           </Card>
 
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-atlas-sm bg-green-500/20 flex items-center justify-center">
                 <ClockIcon className="size-5 text-green-400" />
@@ -218,7 +218,7 @@ export default function DocumentsPage() {
             </div>
           </Card>
 
-          <Card variant="neumorphic" className="p-4">
+          <Card variant="raised" className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-atlas-sm bg-amber-500/20 flex items-center justify-center">
                 <GridIcon className="size-5 text-amber-400" />

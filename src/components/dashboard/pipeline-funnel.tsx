@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
@@ -165,7 +165,7 @@ const stageVariants = {
 
 const barVariants = {
   hidden: { scaleX: 0 },
-  visible: (width: number) => ({
+  visible: (_width: number) => ({
     scaleX: 1,
     transition: {
       type: "spring" as const,
@@ -223,7 +223,7 @@ function FunnelStageRow({
   stage,
   maxCount,
   previousCount,
-  index,
+  index: _index,
   onStageClick,
   showValue = true,
 }: FunnelStageRowProps) {
@@ -540,7 +540,7 @@ export function CompactFunnel({
 
   return (
     <div className={cn("space-y-1.5", className)}>
-      {stages.map((stage, index) => {
+      {stages.map((stage, _index) => {
         const widthPercent = Math.max((stage.count / maxCount) * 100, 10);
         const href = `/deals?stage=${stage.key}`;
 

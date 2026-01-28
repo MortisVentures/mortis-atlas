@@ -5,9 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { AreaChart, DonutChart } from "@tremor/react";
 import {
-  RocketIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
 } from "@radix-ui/react-icons";
 
 import {

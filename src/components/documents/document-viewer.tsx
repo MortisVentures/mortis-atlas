@@ -8,13 +8,9 @@ import {
   Share1Icon,
   ZoomInIcon,
   ZoomOutIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
   EnterFullScreenIcon,
   ExitFullScreenIcon,
   LayersIcon,
-  ClockIcon,
-  PersonIcon,
   FileTextIcon,
   ChevronDownIcon,
   CopyIcon,
@@ -22,7 +18,7 @@ import {
   ExternalLinkIcon,
 } from "@radix-ui/react-icons";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -71,7 +67,7 @@ export function DocumentViewer({
 
   const currentVersion = selectedVersion || document.versions[document.versions.length - 1];
   const typeConfig = documentTypeConfig[document.documentType];
-  const accessConfig = accessLevelConfig[document.accessLevel];
+  const _accessConfig = accessLevelConfig[document.accessLevel];
 
   // Log view access
   React.useEffect(() => {
@@ -327,7 +323,7 @@ function DocumentPreview({ document, version }: DocumentPreviewProps) {
 
   // Non-previewable files
   return (
-    <Card variant="neumorphic" className="w-96 p-8 text-center">
+    <Card variant="raised" className="w-96 p-8 text-center">
       <FileIconDisplay fileType={document.fileType} className="size-16 mx-auto mb-4" />
       <h3 className="font-medium mb-2">{document.name}</h3>
       <p className="text-sm text-muted-foreground mb-4">
@@ -568,7 +564,7 @@ function ShareModal({ isOpen, onClose, shareLink, documentName, onCopy, copied }
             </div>
 
             <p className="text-sm text-muted-foreground mb-4">
-              Share "{documentName}" with a secure link that expires in 24 hours.
+              Share &quot;{documentName}&quot; with a secure link that expires in 24 hours.
             </p>
 
             {shareLink ? (

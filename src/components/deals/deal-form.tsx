@@ -34,8 +34,6 @@ import {
   updateDealSchema,
   CreateDealInput,
   UpdateDealInput,
-  dealStages,
-  dealPriorities,
 } from "@/lib/validations/deal";
 
 // =============================================================================
@@ -134,6 +132,7 @@ export function DealForm({ deal, companyId, companyName, mode }: DealFormProps) 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<CreateDealInput | UpdateDealInput>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema) as any,
     defaultValues: {
       dealName: deal?.dealName ?? "",

@@ -154,9 +154,9 @@ export function calculateIRR(cashFlows: CashFlow[], terminalValue: number = 0): 
 export function calculateNetIRR(
   cashFlows: CashFlow[],
   terminalValue: number,
-  managementFeeRate: number = 0.02,
+  _managementFeeRate: number = 0.02,
   carryRate: number = 0.20,
-  hurdleRate: number = 0.08
+  _hurdleRate: number = 0.08
 ): number {
   // Adjust cash flows for fees
   const adjustedFlows = cashFlows.map(cf => {
@@ -225,7 +225,7 @@ export function calculateLPMetrics(
 
 export function analyzePortfolioConstruction(investments: Investment[]): PortfolioConstruction {
   const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
-  const totalInvested = investments.reduce((sum, inv) => sum + inv.initialAmount, 0);
+  const _totalInvested = investments.reduce((sum, inv) => sum + inv.initialAmount, 0);
 
   // By Stage
   const stageGroups = groupBy(investments, 'stage');
@@ -711,3 +711,4 @@ export function calculateFundMetrics(
     pmeRatio: 1.35, // Public Market Equivalent (vs S&P 500)
   };
 }
+

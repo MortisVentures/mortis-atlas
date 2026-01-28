@@ -1,11 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import {
-  ChevronRightIcon,
   ChevronDownIcon,
   CheckIcon,
   PlusIcon,
@@ -22,10 +19,8 @@ import {
 import { toast } from "sonner";
 
 import { DashboardLayout, DashboardContent, PageHeader } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 // =============================================================================
@@ -409,7 +404,7 @@ export default function NewICMemoPage() {
     keyTerms: "",
   });
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | number | boolean | { category: string; description: string; severity: string; mitigation: string }[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

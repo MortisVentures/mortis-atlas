@@ -8,7 +8,7 @@ const TEMP_USER_ID = "temp-user-id";
  * GET /api/companies/stats
  * Get aggregate statistics for companies
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Fetch stats and sectors in parallel
     const [stats, sectors] = await Promise.all([

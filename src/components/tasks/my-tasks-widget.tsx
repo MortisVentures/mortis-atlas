@@ -7,8 +7,6 @@ import {
   CheckIcon,
   PlusIcon,
   ArrowRightIcon,
-  ExclamationTriangleIcon,
-  CalendarIcon,
   ClockIcon,
 } from "@radix-ui/react-icons";
 
@@ -19,12 +17,10 @@ import { cn } from "@/lib/utils";
 import {
   Task,
   TaskCard,
-  TaskList,
   priorityConfig,
   formatRelativeDate,
   isOverdue,
   isDueToday,
-  isDueSoon,
 } from "./task-card";
 import { SAMPLE_TASKS } from "./task-manager";
 import { TaskModal, QuickTaskInput } from "./task-modal";
@@ -149,7 +145,7 @@ export function MyTasksWidget({
   // Compact variant - smaller card
   if (variant === "compact") {
     return (
-      <Card variant="neumorphic" className="overflow-hidden">
+      <Card variant="raised" className="overflow-hidden">
         <CardHeader className="py-3 px-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">My Tasks</CardTitle>
@@ -183,7 +179,7 @@ export function MyTasksWidget({
   // Default variant - full widget
   return (
     <>
-      <Card variant="neumorphic" className="overflow-hidden">
+      <Card variant="raised" className="overflow-hidden">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -248,7 +244,7 @@ export function MyTasksWidget({
                 className="space-y-2"
               >
                 <CheckIcon className="size-8 mx-auto opacity-50" />
-                <p className="text-sm">You're all caught up!</p>
+                <p className="text-sm">You&apos;re all caught up!</p>
                 <Button
                   variant="ghost"
                   size="sm"

@@ -5,6 +5,7 @@ import {
   DocumentFilter,
   DocumentStats,
   DocumentType,
+  DocumentVersion,
   FileType,
   SourceType,
   generateStoragePath,
@@ -51,7 +52,7 @@ export async function uploadDocument(
   options: DocumentUploadOptions,
   userId: string,
   userName: string,
-  onProgress?: (progress: UploadProgress) => void
+  _onProgress?: (progress: UploadProgress) => void
 ): Promise<UploadResult> {
   // Validate file
   const validation = validateFile(file);
@@ -77,7 +78,7 @@ export async function uploadDocument(
     const storagePath = generateStoragePath(options.companyId, options.documentType, file.name);
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(storagePath, file, {
         cacheControl: "3600",
@@ -136,8 +137,8 @@ export async function uploadDocument(
     // await saveDocumentMetadata(document);
 
     return { success: true, document };
-  } catch (error) {
-    console.error("Upload error:", error);
+  } catch (_error) {
+    console.error("Upload error:", _error);
     return { success: false, error: "Failed to upload document" };
   }
 }
@@ -185,7 +186,7 @@ export async function uploadNewVersion(
     const newVersionNumber = existingDocument.currentVersion + 1;
     const storagePath = `${existingDocument.storagePath.replace(/\/[^/]+$/, "")}/${newVersionNumber}-${file.name}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(storagePath, file, {
         cacheControl: "3600",
@@ -221,8 +222,8 @@ export async function uploadNewVersion(
     };
 
     return { success: true, document: updatedDocument };
-  } catch (error) {
-    console.error("Version upload error:", error);
+  } catch (_error) {
+    console.error("Version upload error:", _error);
     return { success: false, error: "Failed to upload new version" };
   }
 }
@@ -252,7 +253,7 @@ export async function getSignedUrl(
     }
 
     return { url: data.signedUrl };
-  } catch (error) {
+  } catch {
     return { error: "Failed to generate signed URL" };
   }
 }
@@ -307,7 +308,7 @@ export async function downloadDocument(
     }
 
     return { blob: data };
-  } catch (error) {
+  } catch {
     return { error: "Failed to download document" };
   }
 }
@@ -328,7 +329,7 @@ export async function deleteDocument(
 
   try {
     // Delete all version files
-    const filePaths = document.versions.map((v) => {
+    const filePaths = document.versions.map((_v) => {
       // Extract path from URL or use stored path
       return document.storagePath;
     });
@@ -345,7 +346,7 @@ export async function deleteDocument(
     // await deleteDocumentMetadata(document.id);
 
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Failed to delete document" };
   }
 }
@@ -840,3 +841,4 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     downloadCount: 18,
   },
 ];
+

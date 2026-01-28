@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { CheckIcon, RocketIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "@radix-ui/react-icons";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { TaskManager } from "@/components/tasks/task-manager";
 import { TaskModal } from "@/components/tasks/task-modal";
 import { Task } from "@/components/tasks/task-card";
@@ -93,7 +93,7 @@ export default function TasksPage() {
         transition={{ delay: 0.3 }}
         className="fixed bottom-6 right-6"
       >
-        <Card variant="neumorphic" className="px-4 py-2">
+        <Card variant="raised" className="px-4 py-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">⌘</kbd>
             <span>+</span>

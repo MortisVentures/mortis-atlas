@@ -91,7 +91,7 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
 };
 
 const ITEM_HEIGHT = 80;
-const EXPANDED_ITEM_HEIGHT = 140;
+const _EXPANDED_ITEM_HEIGHT = 140;
 
 // =============================================================================
 // SAMPLE DATA
@@ -574,7 +574,7 @@ export function ActivityFeed({
   virtualizedHeight = 500,
   maxHeight = "max-h-[600px]",
   className,
-  onActivityClick,
+  onActivityClick: _onActivityClick,
 }: ActivityFeedProps) {
   const [expandedId, setExpandedId] = React.useState<string | null>(null);
 

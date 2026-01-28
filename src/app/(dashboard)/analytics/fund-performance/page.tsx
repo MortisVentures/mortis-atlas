@@ -6,15 +6,12 @@ import {
   AreaChart,
   BarChart,
   DonutChart,
-  LineChart,
-  BarList,
   Color,
 } from "@tremor/react";
 import {
   BarChartIcon,
   DownloadIcon,
   CalendarIcon,
-  ChevronDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   RocketIcon,
@@ -41,9 +38,6 @@ import {
   formatCurrency,
   formatPercentage,
   formatMultiple,
-  FundMetrics,
-  PortfolioConstruction,
-  QuarterlyData,
 } from "@/lib/analytics/fund-metrics";
 
 // =============================================================================
@@ -223,7 +217,7 @@ export default function FundPerformancePage() {
           className="grid grid-cols-2 gap-6"
         >
           {/* IRR Breakdown */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TriangleUpIcon className="size-5 text-emerald-400" />
@@ -291,7 +285,7 @@ export default function FundPerformancePage() {
           </Card>
 
           {/* MOIC Breakdown */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LayersIcon className="size-5 text-cyan-400" />
@@ -347,7 +341,7 @@ export default function FundPerformancePage() {
           className="grid grid-cols-3 gap-6"
         >
           {/* TVPI/DPI/RVPI Chart */}
-          <Card variant="neumorphic" className="col-span-2">
+          <Card variant="raised" className="col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TargetIcon className="size-5 text-indigo-400" />
@@ -370,7 +364,7 @@ export default function FundPerformancePage() {
           </Card>
 
           {/* LP Metrics Summary */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle>LP Returns Summary</CardTitle>
             </CardHeader>
@@ -415,7 +409,7 @@ export default function FundPerformancePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -489,7 +483,7 @@ export default function FundPerformancePage() {
           className="grid grid-cols-3 gap-6"
         >
           {/* By Sector */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <PieChartIcon className="size-5 text-violet-400" />
@@ -523,7 +517,7 @@ export default function FundPerformancePage() {
           </Card>
 
           {/* By Stage */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LayersIcon className="size-5 text-cyan-400" />
@@ -553,7 +547,7 @@ export default function FundPerformancePage() {
           </Card>
 
           {/* By Geography */}
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <GlobeIcon className="size-5 text-blue-400" />
@@ -596,7 +590,7 @@ export default function FundPerformancePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="size-5 text-amber-400" />
@@ -670,7 +664,7 @@ export default function FundPerformancePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card variant="neumorphic">
+          <Card variant="raised">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Portfolio Companies ({metrics.totalInvestments})</CardTitle>
@@ -771,7 +765,7 @@ interface MetricCardProps {
   color: "emerald" | "cyan" | "indigo" | "violet" | "amber" | "blue";
 }
 
-function MetricCard({ title, value, subtitle, trend, benchmark, progress, icon, color }: MetricCardProps) {
+function MetricCard({ value, subtitle, trend, benchmark, progress, icon, color }: MetricCardProps) {
   const colorClasses = {
     emerald: "bg-emerald-500/20 text-emerald-400",
     cyan: "bg-cyan-500/20 text-cyan-400",
@@ -782,7 +776,7 @@ function MetricCard({ title, value, subtitle, trend, benchmark, progress, icon, 
   };
 
   return (
-    <Card variant="neumorphic" className="p-4">
+    <Card variant="raised" className="p-4">
       <div className="flex items-start justify-between mb-3">
         <div className={cn("w-10 h-10 rounded-atlas-sm flex items-center justify-center", colorClasses[color])}>
           {icon}

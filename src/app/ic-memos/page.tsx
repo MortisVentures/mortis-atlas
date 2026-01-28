@@ -11,11 +11,7 @@ import {
   CrossCircledIcon,
   ClockIcon,
   Pencil1Icon,
-  DotsHorizontalIcon,
-  ChevronRightIcon,
   DownloadIcon,
-  CopyIcon,
-  PersonIcon,
 } from "@radix-ui/react-icons";
 
 import {
@@ -23,7 +19,7 @@ import {
   DashboardContent,
   PageHeader,
 } from "@/components/layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -252,8 +248,8 @@ function StatusBadge({ status }: { status: MemoStatus }) {
 function VotingProgress({ votes }: { votes: ICMemo["votes"] }) {
   const total = votes.yes + votes.no + votes.abstain;
   const quorumPercent = Math.min(100, (total / votes.quorum) * 100);
-  const yesPercent = total > 0 ? (votes.yes / total) * 100 : 0;
-  const noPercent = total > 0 ? (votes.no / total) * 100 : 0;
+  const _yesPercent = total > 0 ? (votes.yes / total) * 100 : 0;
+  const _noPercent = total > 0 ? (votes.no / total) * 100 : 0;
 
   return (
     <div className="space-y-2">

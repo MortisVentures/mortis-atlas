@@ -18,7 +18,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { DealWithRelations } from "@/lib/db/deals";
 import {
-  STAGE_CONFIG,
   PRIORITY_CONFIG,
   SOURCE_CONFIG,
   getDaysInStage,

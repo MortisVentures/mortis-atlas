@@ -85,62 +85,62 @@ export async function requireMinRole(minRole: UserRole) {
  * Check if user can create/edit companies
  */
 export function canManageCompanies(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can view all deals
  */
 export function canViewAllDeals(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can approve IC memos
  */
 export function canApproveICMemos(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can access fund-level financials
  */
 export function canAccessFundFinancials(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can access limited fund financials (analysts)
  */
 export function canAccessLimitedFinancials(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can generate LP reports
  */
 export function canGenerateLPReports(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can view LP contact information
  */
 export function canViewLPContacts(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can view full portfolio (all companies)
  */
 export function canViewFullPortfolio(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER, UserRole.ANALYST] as UserRole[]).includes(role);
 }
 
 /**
  * Check if user can download quarterly reports
  */
-export function canDownloadReports(role: UserRole): boolean {
+export function canDownloadReports(_role: UserRole): boolean {
   // LPs can download their own reports, others can download all
   return true; // LP access is filtered by fund
 }
@@ -156,7 +156,7 @@ export function canManageUsers(role: UserRole): boolean {
  * Check if user can access audit logs
  */
 export function canAccessAuditLogs(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.PARTNER].includes(role);
+  return ([UserRole.ADMIN, UserRole.PARTNER] as UserRole[]).includes(role);
 }
 
 /**
@@ -249,3 +249,4 @@ export function getRolePermissions(role: UserRole): Permission[] {
 
   return allPermissions.filter((p) => hasPermission(role, p));
 }
+

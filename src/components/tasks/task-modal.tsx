@@ -16,14 +16,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   Task,
-  SubTask,
   TaskPriority,
   TaskType,
-  TaskStatus,
   priorityConfig,
   taskTypeConfig,
 } from "./task-card";
@@ -563,3 +560,4 @@ export function QuickTaskInput({ onSubmit, placeholder = "Add a quick task...", 
     </form>
   );
 }
+

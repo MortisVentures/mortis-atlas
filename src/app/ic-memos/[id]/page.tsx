@@ -4,27 +4,20 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { AreaChart, BarChart, DonutChart } from "@tremor/react";
 import {
   ChevronRightIcon,
   ChevronDownIcon,
   Pencil1Icon,
   DownloadIcon,
   Share2Icon,
-  CopyIcon,
   ClockIcon,
   CheckCircledIcon,
   CrossCircledIcon,
-  PersonIcon,
-  ChatBubbleIcon,
   ExternalLinkIcon,
   FileTextIcon,
-  CalendarIcon,
   CheckIcon,
   Cross2Icon,
   MinusIcon,
-  InfoCircledIcon,
-  ExclamationTriangleIcon,
   RocketIcon,
   TargetIcon,
   GlobeIcon,
@@ -34,7 +27,7 @@ import { toast } from "sonner";
 
 import { DashboardLayout, DashboardContent } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge, BadgeGroup } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -507,8 +500,8 @@ function PartnerVoteRow({ partner }: { partner: Partner }) {
 // =============================================================================
 
 export default function ICMemoDetailPage() {
-  const params = useParams();
-  const router = useRouter();
+  const _params = useParams();
+  const _router = useRouter();
   const [userVote, setUserVote] = React.useState<VoteType>(null);
   const [voteComment, setVoteComment] = React.useState("");
 

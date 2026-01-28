@@ -45,7 +45,7 @@ export interface TrendDataPoint {
 // =============================================================================
 
 function generateSampleData(): DealFlowDataPoint[] {
-  const months = [
+  const _months = [
     "Nov '23", "Dec '23", "Jan '24", "Feb '24", "Mar '24", "Apr '24",
     "May '24", "Jun '24", "Jul '24", "Aug '24", "Sep '24", "Oct '24"
   ];
@@ -73,7 +73,7 @@ const defaultData = generateSampleData();
 // Calculate trend/velocity data
 function calculateTrendData(data: DealFlowDataPoint[]): TrendDataPoint[] {
   const trendData: TrendDataPoint[] = [];
-  let runningAvg = 0;
+  let _runningAvg = 0;
 
   data.forEach((point, index) => {
     // Calculate 3-month moving average for trend
@@ -81,7 +81,7 @@ function calculateTrendData(data: DealFlowDataPoint[]): TrendDataPoint[] {
     const window = data.slice(windowStart, index + 1);
     const avg = window.reduce((sum, p) => sum + p.total, 0) / window.length;
 
-    runningAvg = avg;
+    _runningAvg = avg;
 
     trendData.push({
       month: point.month,
@@ -171,7 +171,7 @@ interface SummaryStatsProps {
   timeRange: TimeRange;
 }
 
-function SummaryStats({ data, timeRange }: SummaryStatsProps) {
+function SummaryStats({ data, timeRange: _timeRange }: SummaryStatsProps) {
   const totalDeals = data.reduce((sum, p) => sum + p.total, 0);
   const totalWon = data.reduce((sum, p) => sum + p.won, 0);
   const totalLost = data.reduce((sum, p) => sum + p.lost, 0);
@@ -244,7 +244,7 @@ export function DealFlowChart({
 
   // Filter data by time range
   const filteredData = React.useMemo(() => {
-    const now = new Date();
+    const _now = new Date();
     let monthsToShow = data.length;
 
     switch (timeRange) {
