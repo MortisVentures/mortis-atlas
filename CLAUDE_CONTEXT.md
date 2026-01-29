@@ -1,18 +1,18 @@
 # Mortis Atlas - Claude Context
 
-## Current State (as of January 27, 2026)
+## Current State (as of January 28, 2026)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
 | Phase 1 - Foundation | ✅ Complete | Next.js 14, Prisma, Supabase, shadcn/ui |
 | Phase 2 - UI Foundation | ✅ Complete | All pages and components built |
 | Phase 3 - Authentication | ✅ Complete | NextAuth.js + RBAC schema |
-| Phase 4 - CRUD Operations | 🟡 In Progress | Companies + Contacts + Deals + Docs + Kanban complete |
+| Phase 4 - CRUD Operations | ✅ Complete | Companies + Contacts + Deals + Docs + Kanban complete |
 | **Phase 4.5 - Security** | 🔴 **CRITICAL** | **BLOCKING** - Must complete before Phase 5 |
 | Phase 5 - Testing | 🔴 Not Started | Integration and E2E tests |
 | Phase 6 - Polish | 🔴 Not Started | UI refinements |
 
-**Operational Readiness: ~85%** - Auth + Companies + Contacts + Deals CRUD + Source Attribution + Documents + Kanban Board complete
+**Operational Readiness: ~90%** - Auth + Companies + Contacts + Deals CRUD + Source Attribution + Documents + Kanban Board + Deal Detail/Edit Pages complete
 
 ⚠️ **SECURITY BLOCKER**: Phase 4.5 must be completed before ANY public deployment or Phase 5 testing.
 
@@ -77,7 +77,7 @@ Make all pages functional with real database operations.
 - [x] Contact form with company dropdown
 - [x] Inline add contact dialog on company detail page
 
-### Deals (Priority 3 - Pipeline tracking) 🚧 IN PROGRESS
+### Deals (Priority 3 - Pipeline tracking) ✅ COMPLETE
 - [x] Schema extensions (priority, source, stage history, team members)
 - [x] DealTeamMember model for deal collaboration
 - [x] Pipeline utilities with stage configs and thresholds
@@ -670,4 +670,28 @@ pnpm dlx prisma studio      # Open Prisma Studio
 
 ---
 
-Last updated: January 27, 2026 (Phase 4.5 - Security Hardening requirements documented)
+Last updated: January 28, 2026 (Lint fixes + build stabilization)
+
+---
+
+## Session Log: January 28, 2026
+
+### Accomplished
+- **Lint Fix Pass**: Resolved 53 files with TypeScript/ESLint errors
+- **Build Stabilization**: Fixed all build failures, application now compiles cleanly
+- **Deal Detail Page**: Completed Phase 4D (deal detail with financials and timeline)
+- **Deal Edit Page**: Completed Phase 4E (deal edit functionality)
+- **Portfolio View**: Added portfolio view for closed deals
+
+### Key Fixes
+- Added ESLint rule for underscore-prefixed unused vars (`_variable`)
+- Fixed invalid Card variants (`"neumorphic"` → `"raised"`)
+- Fixed invalid Button variants (`"default"` → `"primary"`)
+- Fixed `ZodError.errors` → `ZodError.issues` in API routes
+- Added Suspense boundaries for `useSearchParams()` in auth pages (Next.js 14 requirement)
+- Fixed TypeScript `includes()` type errors in RBAC module
+- Removed empty `(app)` route group causing build conflicts
+
+### Commits
+- `a2a5cff` - [FIX] Resolve all lint errors and build issues
+- `090ec7d` - [PHASE-4D/4E] Feature: Deal detail page, edit page, portfolio view + security roadmap
