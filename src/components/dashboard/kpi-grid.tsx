@@ -260,7 +260,6 @@ function TotalAUMCard({ value, change, data, index = 0 }: TotalAUMCardProps) {
           label: "vs last quarter",
         }}
         icon={<BarChartIcon className="size-5" />}
-        href="/analytics/aum"
         glowColor="tactical"
       >
         <div className="h-16 -mx-2">
@@ -446,7 +445,6 @@ function PipelineValueCard({
           label: "MoM",
         }}
         icon={<TargetIcon className="size-5" />}
-        href="/pipeline"
         glowColor="tactical"
       >
         <div className="space-y-3">

@@ -2,21 +2,15 @@
 // DEAL SOURCE ATTRIBUTION - TYPES AND UTILITIES
 // =============================================================================
 
+import { DealSource } from "@prisma/client";
+
 // =============================================================================
 // TYPES
 // =============================================================================
 
-export type SourceType =
-  | "INBOUND"
-  | "REFERRAL"
-  | "CONFERENCE"
-  | "CO_INVESTOR"
-  | "PORTFOLIO_REFERRAL"
-  | "COLD_OUTREACH"
-  | "ACCELERATOR"
-  | "UNIVERSITY";
+export type SourceType = DealSource;
 
-export interface DealSource {
+export interface DealSourceInfo {
   id: string;
   type: SourceType;
 
@@ -37,6 +31,7 @@ export interface DealSource {
   createdAt: string;
 }
 
+
 export interface DealWithSource {
   id: string;
   companyId: string;
@@ -45,7 +40,7 @@ export interface DealWithSource {
   stage: string;
   amount?: number;
   investedAmount?: number;
-  source: DealSource;
+  source: DealSourceInfo;
   createdAt: string;
   closedAt?: string;
   outcome: "PENDING" | "WON" | "LOST" | "PASSED";
@@ -168,41 +163,29 @@ export const sourceTypeConfig: Record<SourceType, {
   color: string;
   description: string;
 }> = {
-  INBOUND: {
-    label: "Inbound",
-    icon: "inbox",
-    color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    description: "Website, email, or direct inquiries",
-  },
   REFERRAL: {
     label: "Referral",
     icon: "person",
     color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     description: "Personal or professional referrals",
   },
-  CONFERENCE: {
-    label: "Conference/Event",
-    icon: "calendar",
-    color: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    description: "Industry conferences and events",
-  },
-  CO_INVESTOR: {
-    label: "Co-Investor",
-    icon: "briefcase",
-    color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    description: "Referrals from other funds",
-  },
-  PORTFOLIO_REFERRAL: {
-    label: "Portfolio Referral",
-    icon: "rocket",
-    color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    description: "Referrals from portfolio companies",
-  },
-  COLD_OUTREACH: {
-    label: "Cold Outreach",
+  DIRECT_OUTREACH: {
+    label: "Direct Outreach",
     icon: "mail",
     color: "bg-slate-500/20 text-slate-400 border-slate-500/30",
     description: "Proactive deal sourcing",
+  },
+  INBOUND: {
+    label: "Inbound",
+    icon: "inbox",
+    color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    description: "Website, email, or direct inquiries",
+  },
+  CONFERENCE: {
+    label: "Conference",
+    icon: "calendar",
+    color: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    description: "Industry conferences and events",
   },
   ACCELERATOR: {
     label: "Accelerator",
@@ -210,11 +193,29 @@ export const sourceTypeConfig: Record<SourceType, {
     color: "bg-red-500/20 text-red-400 border-red-500/30",
     description: "YC, Techstars, etc.",
   },
-  UNIVERSITY: {
-    label: "University",
+  NETWORK: {
+    label: "Network",
     icon: "school",
+    color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    description: "General network connection",
+  },
+  PORTFOLIO: {
+    label: "Portfolio",
+    icon: "rocket",
+    color: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    description: "Referrals from portfolio companies",
+  },
+  INVESTOR_NETWORK: {
+    label: "Investor Network",
+    icon: "briefcase",
     color: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-    description: "Stanford, MIT, etc.",
+    description: "Co-investor or LP referrals",
+  },
+  OTHER: {
+    label: "Other",
+    icon: "circle",
+    color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30",
+    description: "Other sources",
   },
 };
 
@@ -245,14 +246,14 @@ export const UNIVERSITIES = [
 ];
 
 export const DEAL_STAGES = [
-  "SOURCED",
-  "FIRST_MEETING",
-  "SECOND_MEETING",
+  "INITIAL_REVIEW",
+  "MEETING_SCHEDULED",
   "DEEP_DIVE",
   "PARTNER_REVIEW",
   "TERM_SHEET",
-  "DUE_DILIGENCE",
-  "CLOSED",
+  "LEGAL_DILIGENCE",
+  "CLOSED_WON",
+  "CLOSED_LOST",
 ];
 
 // =============================================================================
@@ -581,7 +582,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c1",
     companyName: "Acme Corp",
     dealName: "Series A",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 2500000,
     source: {
       id: "src-1",
@@ -601,7 +602,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c2",
     companyName: "TechFlow",
     dealName: "Seed",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 1500000,
     source: {
       id: "src-2",
@@ -621,7 +622,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c3",
     companyName: "DataVault",
     dealName: "Series A",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 3000000,
     source: {
       id: "src-3",
@@ -641,11 +642,11 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c4",
     companyName: "CloudSync",
     dealName: "Seed",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 2000000,
     source: {
       id: "src-4",
-      type: "PORTFOLIO_REFERRAL",
+      type: "PORTFOLIO",
       portfolioCompanyId: "c1",
       portfolioCompanyName: "Acme Corp",
       referrerName: "Sarah Chen",
@@ -662,11 +663,11 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c5",
     companyName: "QuantumAI",
     dealName: "Series A",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 4000000,
     source: {
       id: "src-5",
-      type: "CO_INVESTOR",
+      type: "INVESTOR_NETWORK",
       coInvestorFund: "Sequoia Capital",
       referrerName: "Partner at Sequoia",
       createdAt: "2022-06-15",
@@ -682,11 +683,11 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c6",
     companyName: "BioTech Labs",
     dealName: "Series B",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 3500000,
     source: {
       id: "src-6",
-      type: "UNIVERSITY",
+      type: "NETWORK",
       universityName: "Stanford University",
       referrerContactId: "ref-3",
       referrerName: "Dr. Michael Lee",
@@ -703,7 +704,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c7",
     companyName: "SecureNet",
     dealName: "Series A",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 2500000,
     source: {
       id: "src-7",
@@ -722,7 +723,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c8",
     companyName: "GreenEnergy",
     dealName: "Seed",
-    stage: "CLOSED",
+    stage: "CLOSED_WON",
     amount: 1800000,
     source: {
       id: "src-8",
@@ -745,7 +746,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     stage: "DEEP_DIVE",
     source: {
       id: "src-9",
-      type: "COLD_OUTREACH",
+      type: "DIRECT_OUTREACH",
       notes: "Found via LinkedIn research",
       createdAt: "2023-09-01",
     },
@@ -775,7 +776,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c11",
     companyName: "RetailOS",
     dealName: "Series A",
-    stage: "FIRST_MEETING",
+    stage: "MEETING_SCHEDULED",
     source: {
       id: "src-11",
       type: "REFERRAL",
@@ -795,7 +796,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     stage: "TERM_SHEET",
     source: {
       id: "src-12",
-      type: "CO_INVESTOR",
+      type: "INVESTOR_NETWORK",
       coInvestorFund: "Andreessen Horowitz",
       createdAt: "2024-03-01",
     },
@@ -808,7 +809,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c13",
     companyName: "FailedStartup",
     dealName: "Seed",
-    stage: "CLOSED",
+    stage: "CLOSED_LOST",
     source: {
       id: "src-13",
       type: "INBOUND",
@@ -825,7 +826,7 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c14",
     companyName: "AnotherOne",
     dealName: "Series A",
-    stage: "CLOSED",
+    stage: "CLOSED_LOST",
     source: {
       id: "src-14",
       type: "CONFERENCE",
@@ -843,10 +844,10 @@ export const SAMPLE_DEALS_WITH_SOURCE: DealWithSource[] = [
     companyId: "c15",
     companyName: "MissedDeal",
     dealName: "Seed",
-    stage: "CLOSED",
+    stage: "CLOSED_LOST",
     source: {
       id: "src-15",
-      type: "COLD_OUTREACH",
+      type: "DIRECT_OUTREACH",
       createdAt: "2023-07-15",
     },
     createdAt: "2023-07-15",

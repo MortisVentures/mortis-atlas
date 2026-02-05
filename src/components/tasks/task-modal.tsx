@@ -29,27 +29,10 @@ import {
 // SAMPLE DATA FOR SELECTORS
 // =============================================================================
 
-const SAMPLE_USERS = [
-  { id: "u1", name: "Sarah Chen" },
-  { id: "u2", name: "Michael Rodriguez" },
-  { id: "u3", name: "Emily Thompson" },
-  { id: "u4", name: "James Wilson" },
-];
-
-const SAMPLE_COMPANIES = [
-  { id: "c1", name: "Acme Corp" },
-  { id: "c2", name: "TechFlow" },
-  { id: "c3", name: "DataVault" },
-  { id: "c4", name: "CloudSync" },
-  { id: "c5", name: "QuantumAI" },
-];
-
-const SAMPLE_DEALS = [
-  { id: "d1", name: "Acme Corp - Series B", companyId: "c1" },
-  { id: "d2", name: "TechFlow - Series A", companyId: "c2" },
-  { id: "d3", name: "CloudSync - Seed", companyId: "c4" },
-  { id: "d4", name: "QuantumAI - Series A", companyId: "c5" },
-];
+// In production, users/companies/deals will be fetched from the API
+const SAMPLE_USERS: { id: string; name: string }[] = [];
+const SAMPLE_COMPANIES: { id: string; name: string }[] = [];
+const SAMPLE_DEALS: { id: string; name: string; companyId: string }[] = [];
 
 // =============================================================================
 // TYPES
@@ -151,7 +134,7 @@ export function TaskModal({
       notes: formData.notes || undefined,
       createdAt: task?.createdAt || new Date().toISOString(),
       createdById: task?.createdById || "u1",
-      createdByName: task?.createdByName || "Sarah Chen",
+      createdByName: task?.createdByName || "Current User",
     });
     onClose();
   };

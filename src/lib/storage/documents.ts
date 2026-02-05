@@ -682,7 +682,7 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "CloudSync",
     dealId: "d3",
     dealName: "Seed",
-    source: "PORTFOLIO_REFERRAL",
+    source: "PORTFOLIO",
     sourceName: "Acme Corp",
     icMemoId: "memo-1",
     currentVersion: 2,
@@ -733,7 +733,7 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     companyName: "QuantumAI",
     dealId: "d4",
     dealName: "Series A",
-    source: "CO_INVESTOR",
+    source: "INVESTOR_NETWORK",
     sourceName: "Sequoia Capital",
     currentVersion: 2,
     versions: [
@@ -817,7 +817,7 @@ export const SAMPLE_DOCUMENTS: DocumentMetadata[] = [
     mimeType: "application/pdf",
     storagePath: "general/board_notes/q4-2023-notes.pdf",
     bucketName: BUCKET_NAME,
-    source: "UNIVERSITY",
+    source: "NETWORK",
     sourceName: "Stanford University",
     currentVersion: 1,
     versions: [

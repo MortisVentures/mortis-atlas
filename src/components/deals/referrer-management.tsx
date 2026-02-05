@@ -25,7 +25,6 @@ import {
 import {
   Referrer,
   ReferrerTier,
-  SAMPLE_REFERRERS,
   referrerTierConfig,
 } from "@/lib/deals/source-tracking";
 
@@ -273,7 +272,7 @@ interface ReferrerListProps {
 }
 
 export function ReferrerList({
-  referrers = SAMPLE_REFERRERS,
+  referrers = [],
   onSendThankYou,
   onUpdateTier,
   onToggleStar,
@@ -396,7 +395,7 @@ interface ThankYouAutomationProps {
 }
 
 export function ThankYouAutomation({
-  referrers = SAMPLE_REFERRERS,
+  referrers = [],
   onSendThankYou,
   onBulkSend,
 }: ThankYouAutomationProps) {
@@ -825,7 +824,7 @@ interface ReferrerManagementDashboardProps {
 }
 
 export function ReferrerManagementDashboard({
-  referrers = SAMPLE_REFERRERS,
+  referrers = [],
 }: ReferrerManagementDashboardProps) {
   const [activeTab, setActiveTab] = useState<"list" | "thankyou" | "rewards">(
     "list"

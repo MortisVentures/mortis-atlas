@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   SourceType,
-  DealSource,
+  DealSourceInfo,
   sourceTypeConfig,
   ACCELERATORS,
   UNIVERSITIES,
@@ -36,14 +36,15 @@ import {
 // =============================================================================
 
 const sourceIcons: Record<SourceType, React.ReactNode> = {
-  INBOUND: <EnvelopeClosedIcon className="size-4" />,
   REFERRAL: <PersonIcon className="size-4" />,
+  DIRECT_OUTREACH: <PaperPlaneIcon className="size-4" />,
+  INBOUND: <EnvelopeClosedIcon className="size-4" />,
   CONFERENCE: <CalendarIcon className="size-4" />,
-  CO_INVESTOR: <BackpackIcon className="size-4" />,
-  PORTFOLIO_REFERRAL: <RocketIcon className="size-4" />,
-  COLD_OUTREACH: <PaperPlaneIcon className="size-4" />,
   ACCELERATOR: <LightningBoltIcon className="size-4" />,
-  UNIVERSITY: <ArchiveIcon className="size-4" />,
+  NETWORK: <ArchiveIcon className="size-4" />,
+  PORTFOLIO: <RocketIcon className="size-4" />,
+  INVESTOR_NETWORK: <BackpackIcon className="size-4" />,
+  OTHER: <PaperPlaneIcon className="size-4" />,
 };
 
 // =============================================================================
@@ -51,8 +52,8 @@ const sourceIcons: Record<SourceType, React.ReactNode> = {
 // =============================================================================
 
 interface SourceInputProps {
-  value?: Partial<DealSource>;
-  onChange: (source: Partial<DealSource>) => void;
+  value?: Partial<DealSourceInfo>;
+  onChange: (source: Partial<DealSourceInfo>) => void;
   portfolioCompanies?: { id: string; name: string }[];
 }
 
@@ -243,8 +244,8 @@ export function SourceInput({
               </div>
             )}
 
-            {/* CO_INVESTOR */}
-            {selectedType === "CO_INVESTOR" && (
+            {/* INVESTOR_NETWORK */}
+            {selectedType === "INVESTOR_NETWORK" && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-2">Fund Name</label>
@@ -265,8 +266,8 @@ export function SourceInput({
               </div>
             )}
 
-            {/* PORTFOLIO_REFERRAL */}
-            {selectedType === "PORTFOLIO_REFERRAL" && (
+            {/* PORTFOLIO */}
+            {selectedType === "PORTFOLIO" && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-2">Portfolio Company</label>
@@ -304,8 +305,8 @@ export function SourceInput({
               </div>
             )}
 
-            {/* COLD_OUTREACH */}
-            {selectedType === "COLD_OUTREACH" && (
+            {/* DIRECT_OUTREACH */}
+            {selectedType === "DIRECT_OUTREACH" && (
               <div>
                 <label className="block text-sm font-medium mb-2">Notes (optional)</label>
                 <textarea
@@ -351,8 +352,8 @@ export function SourceInput({
               </div>
             )}
 
-            {/* UNIVERSITY */}
-            {selectedType === "UNIVERSITY" && (
+            {/* NETWORK */}
+            {selectedType === "NETWORK" && (
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-2">University</label>
@@ -395,7 +396,7 @@ export function SourceInput({
 // =============================================================================
 
 interface SourceBadgeProps {
-  source: DealSource;
+  source: DealSourceInfo;
   showDetails?: boolean;
   size?: "sm" | "md";
 }
@@ -409,13 +410,13 @@ export function SourceBadge({ source, showDetails = false, size = "sm" }: Source
         return source.referrerName;
       case "CONFERENCE":
         return source.eventName;
-      case "CO_INVESTOR":
+      case "INVESTOR_NETWORK":
         return source.coInvestorFund;
-      case "PORTFOLIO_REFERRAL":
+      case "PORTFOLIO":
         return source.portfolioCompanyName;
       case "ACCELERATOR":
         return source.acceleratorName;
-      case "UNIVERSITY":
+      case "NETWORK":
         return source.universityName;
       case "INBOUND":
         return source.channel;
@@ -446,7 +447,7 @@ export function SourceBadge({ source, showDetails = false, size = "sm" }: Source
 // =============================================================================
 
 interface SourceSummaryCardProps {
-  source: DealSource;
+  source: DealSourceInfo;
   dealCount?: number;
   conversionRate?: number;
   onClick?: () => void;

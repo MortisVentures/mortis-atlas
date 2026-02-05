@@ -94,128 +94,10 @@ const ITEM_HEIGHT = 80;
 const _EXPANDED_ITEM_HEIGHT = 140;
 
 // =============================================================================
-// SAMPLE DATA
+// DEFAULT DATA
 // =============================================================================
 
-function generateSampleActivities(): Activity[] {
-  const now = new Date();
-
-  return [
-    {
-      id: "1",
-      type: "DEAL_UPDATE",
-      title: "TechFlow AI moved to Term Sheet",
-      description: "Deal progressed from Due Diligence to Term Sheet stage. Valuation confirmed at $45M.",
-      timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000), // 1 hour ago
-      company: { id: "c1", name: "TechFlow AI" },
-      deal: { id: "d1", name: "Series A" },
-      metadata: { dealStage: "Term Sheet", previousStage: "Due Diligence" },
-      isNew: true,
-    },
-    {
-      id: "2",
-      type: "MEETING",
-      title: "Partner meeting with Quantum Labs",
-      description: "Initial pitch meeting. Discussed product roadmap and market opportunity.",
-      timestamp: new Date(now.getTime() - 3 * 60 * 60 * 1000), // 3 hours ago
-      company: { id: "c2", name: "Quantum Labs" },
-      contact: { id: "ct1", name: "Sarah Chen" },
-      metadata: { duration: "45 min", attendees: ["John Smith", "Sarah Chen"] },
-    },
-    {
-      id: "3",
-      type: "EMAIL",
-      title: "Follow-up sent to DataSync",
-      description: "Sent term sheet draft and investment memo for review.",
-      timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000), // 5 hours ago
-      company: { id: "c3", name: "DataSync" },
-      contact: { id: "ct2", name: "Mike Johnson" },
-    },
-    {
-      id: "4",
-      type: "CALL",
-      title: "Reference call - CloudScale",
-      description: "Spoke with former CTO about technical capabilities and team dynamics.",
-      timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000), // Yesterday
-      company: { id: "c4", name: "CloudScale" },
-      metadata: { duration: "30 min", outcome: "Positive" },
-    },
-    {
-      id: "5",
-      type: "NOTE",
-      title: "Investment thesis updated",
-      description: "Added notes on competitive landscape analysis and market sizing for AI infrastructure sector.",
-      timestamp: new Date(now.getTime() - 26 * 60 * 60 * 1000), // Yesterday
-      company: { id: "c5", name: "NeuralNet Inc" },
-    },
-    {
-      id: "6",
-      type: "DEAL_UPDATE",
-      title: "Blockchain Labs deal closed",
-      description: "Successfully closed Series B investment. $15M at $120M post-money.",
-      timestamp: new Date(now.getTime() - 48 * 60 * 60 * 1000), // 2 days ago
-      company: { id: "c6", name: "Blockchain Labs" },
-      deal: { id: "d2", name: "Series B" },
-      metadata: { dealStage: "Closed Won" },
-    },
-    {
-      id: "7",
-      type: "MEETING",
-      title: "IC presentation - FinanceAI",
-      description: "Presented investment opportunity to Investment Committee. Approved for term sheet.",
-      timestamp: new Date(now.getTime() - 72 * 60 * 60 * 1000), // 3 days ago
-      company: { id: "c7", name: "FinanceAI" },
-      metadata: { duration: "1 hr", outcome: "Approved" },
-    },
-    {
-      id: "8",
-      type: "EMAIL",
-      title: "Due diligence request sent",
-      description: "Requested financial statements, cap table, and customer references.",
-      timestamp: new Date(now.getTime() - 96 * 60 * 60 * 1000), // 4 days ago
-      company: { id: "c8", name: "RoboTech" },
-      contact: { id: "ct3", name: "Alex Wong" },
-    },
-    {
-      id: "9",
-      type: "CALL",
-      title: "Intro call with founder",
-      description: "Initial conversation about vision, team, and funding needs.",
-      timestamp: new Date(now.getTime() - 120 * 60 * 60 * 1000), // 5 days ago
-      company: { id: "c9", name: "SpaceData" },
-      contact: { id: "ct4", name: "Emily Davis" },
-      metadata: { duration: "25 min" },
-    },
-    {
-      id: "10",
-      type: "NOTE",
-      title: "Market research notes",
-      description: "Compiled research on autonomous vehicle market trends and key players.",
-      timestamp: new Date(now.getTime() - 168 * 60 * 60 * 1000), // 7 days ago
-    },
-    {
-      id: "11",
-      type: "DEAL_UPDATE",
-      title: "GreenEnergy passed",
-      description: "Decision to pass on opportunity. Concerns about unit economics and competition.",
-      timestamp: new Date(now.getTime() - 200 * 60 * 60 * 1000), // 8+ days ago
-      company: { id: "c10", name: "GreenEnergy" },
-      deal: { id: "d3", name: "Series A" },
-      metadata: { dealStage: "Passed" },
-    },
-    {
-      id: "12",
-      type: "MEETING",
-      title: "Board meeting - Portfolio Co",
-      description: "Quarterly board meeting. Reviewed financials and growth metrics.",
-      timestamp: new Date(now.getTime() - 240 * 60 * 60 * 1000), // 10 days ago
-      company: { id: "c11", name: "Portfolio Co" },
-      metadata: { duration: "2 hrs" },
-    },
-  ];
-}
-
-const defaultActivities = generateSampleActivities();
+const defaultActivities: Activity[] = [];
 
 // =============================================================================
 // UTILITY FUNCTIONS
@@ -727,7 +609,6 @@ export function CompactActivityFeed({
 // =============================================================================
 
 export {
-  generateSampleActivities,
   formatRelativeTime,
   getDateGroup,
   groupActivitiesByDate,

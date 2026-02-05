@@ -22,7 +22,7 @@ export {
 // Re-export types
 export type {
   SourceType,
-  DealSource,
+  DealSourceInfo,
   DealWithSource,
   Referrer,
   ReferrerTier,

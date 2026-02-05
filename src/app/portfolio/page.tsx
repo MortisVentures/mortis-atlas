@@ -35,56 +35,7 @@ interface PortfolioCompany {
   irr: number;
 }
 
-const portfolioCompanies: PortfolioCompany[] = [
-  {
-    id: "p1",
-    name: "HealthBridge",
-    sector: "HealthTech",
-    stage: "Series C",
-    investmentDate: "2021-03-15",
-    investmentAmount: 5000000,
-    currentValuation: 350000000,
-    ownership: 8.5,
-    moic: 4.2,
-    irr: 85,
-  },
-  {
-    id: "p2",
-    name: "CryptoVault",
-    sector: "Crypto",
-    stage: "Series B",
-    investmentDate: "2020-06-01",
-    investmentAmount: 3000000,
-    currentValuation: 500000000,
-    ownership: 5.2,
-    moic: 8.7,
-    irr: 142,
-  },
-  {
-    id: "p3",
-    name: "CloudScale",
-    sector: "SaaS",
-    stage: "Series A",
-    investmentDate: "2022-01-20",
-    investmentAmount: 2000000,
-    currentValuation: 80000000,
-    ownership: 12.0,
-    moic: 2.4,
-    irr: 65,
-  },
-  {
-    id: "p4",
-    name: "AI Dynamics",
-    sector: "AI/ML",
-    stage: "Series B",
-    investmentDate: "2021-09-10",
-    investmentAmount: 4000000,
-    currentValuation: 200000000,
-    ownership: 6.8,
-    moic: 3.4,
-    irr: 78,
-  },
-];
+const portfolioCompanies: PortfolioCompany[] = [];
 
 const sectorDistribution = [
   { name: "HealthTech", value: 30 },
@@ -120,7 +71,9 @@ export default function PortfolioPage() {
     (sum, c) => sum + (c.currentValuation * c.ownership) / 100,
     0
   );
-  const averageMoic = portfolioCompanies.reduce((sum, c) => sum + c.moic, 0) / portfolioCompanies.length;
+  const averageMoic = portfolioCompanies.length > 0
+    ? portfolioCompanies.reduce((sum, c) => sum + c.moic, 0) / portfolioCompanies.length
+    : 0;
 
   return (
     <DashboardLayout>
@@ -216,6 +169,15 @@ export default function PortfolioPage() {
 
         {/* Portfolio Companies */}
         <PageSection title="Portfolio Companies">
+          {portfolioCompanies.length === 0 ? (
+            <Card variant="raised" className="p-12 text-center">
+              <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                <ArrowUpIcon className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">No portfolio companies yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Closed deals will appear here as portfolio investments</p>
+            </Card>
+          ) : (
           <div className="space-y-3">
             {portfolioCompanies.map((company, index) => (
               <motion.div
@@ -286,6 +248,7 @@ export default function PortfolioPage() {
               </motion.div>
             ))}
           </div>
+          )}
         </PageSection>
       </DashboardContent>
     </DashboardLayout>

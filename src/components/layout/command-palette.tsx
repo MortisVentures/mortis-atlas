@@ -52,26 +52,10 @@ export interface CommandPaletteProps {
 // SAMPLE DATA - In production, this would come from API/database
 // =============================================================================
 
-const sampleCompanies: SearchResult[] = [
-  { id: "c1", type: "company", title: "TechFlow AI", subtitle: "AI/ML • Due Diligence", href: "/companies/c1", keywords: ["ai", "machine learning", "series a"] },
-  { id: "c2", type: "company", title: "Quantum Labs", subtitle: "DeepTech • Engaged", href: "/companies/c2", keywords: ["quantum", "computing"] },
-  { id: "c3", type: "company", title: "HealthBridge", subtitle: "HealthTech • Portfolio", href: "/companies/c3", keywords: ["health", "medical"] },
-  { id: "c4", type: "company", title: "FinanceOS", subtitle: "FinTech • Qualified", href: "/companies/c4", keywords: ["finance", "banking"] },
-  { id: "c5", type: "company", title: "DataSync Pro", subtitle: "SaaS • Due Diligence", href: "/companies/c5", keywords: ["saas", "data"] },
-];
-
-const sampleContacts: SearchResult[] = [
-  { id: "ct1", type: "contact", title: "Sarah Chen", subtitle: "CEO at TechFlow AI", href: "/contacts/ct1", keywords: ["ceo", "founder"] },
-  { id: "ct2", type: "contact", title: "Mike Johnson", subtitle: "CTO at DataSync Pro", href: "/contacts/ct2", keywords: ["cto", "tech"] },
-  { id: "ct3", type: "contact", title: "Emily Davis", subtitle: "CFO at Quantum Labs", href: "/contacts/ct3", keywords: ["cfo", "finance"] },
-  { id: "ct4", type: "contact", title: "Alex Wong", subtitle: "Founder at FinanceOS", href: "/contacts/ct4", keywords: ["founder"] },
-];
-
-const sampleDeals: SearchResult[] = [
-  { id: "d1", type: "deal", title: "TechFlow AI Series A", subtitle: "$5M • Term Sheet", href: "/deals/d1", keywords: ["series a", "term sheet"] },
-  { id: "d2", type: "deal", title: "Quantum Labs Series B", subtitle: "$15M • Deep Dive", href: "/deals/d2", keywords: ["series b"] },
-  { id: "d3", type: "deal", title: "FinanceOS Seed", subtitle: "$2M • Partner Review", href: "/deals/d3", keywords: ["seed"] },
-];
+// In production, companies/contacts/deals will be fetched from the API
+const sampleCompanies: SearchResult[] = [];
+const sampleContacts: SearchResult[] = [];
+const sampleDeals: SearchResult[] = [];
 
 const navigationPages: SearchResult[] = [
   { id: "nav-dashboard", type: "page", title: "Dashboard", subtitle: "Overview and KPIs", href: "/dashboard", icon: <HomeIcon className="size-4" /> },

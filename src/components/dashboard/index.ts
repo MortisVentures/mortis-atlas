@@ -54,7 +54,6 @@ export {
   ActivityItem,
   DateGroupHeader,
   ActivityList,
-  generateSampleActivities,
   formatRelativeTime,
   getDateGroup,
   groupActivitiesByDate,

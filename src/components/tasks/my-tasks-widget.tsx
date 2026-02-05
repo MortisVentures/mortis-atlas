@@ -102,9 +102,9 @@ export function MyTasksWidget({
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
       createdAt: new Date().toISOString(),
       assigneeId: userId,
-      assigneeName: "Sarah Chen", // Would come from context in real app
+      assigneeName: "Current User",
       createdById: userId,
-      createdByName: "Sarah Chen",
+      createdByName: "Current User",
       subtasks: [],
     };
     setTasks((prev) => [newTask, ...prev]);

@@ -46,13 +46,8 @@ interface CompanyOption {
 // SAMPLE DATA
 // =============================================================================
 
-const sampleCompanies: CompanyOption[] = [
-  { id: "c1", name: "TechFlow AI", sector: "AI/ML", stage: "Series A" },
-  { id: "c2", name: "CloudScale", sector: "Infrastructure", stage: "Seed" },
-  { id: "c3", name: "BioGenix", sector: "HealthTech", stage: "Series B" },
-  { id: "c4", name: "FinanceHub", sector: "FinTech", stage: "Pre-Seed" },
-  { id: "c5", name: "DataStream", sector: "Data/Analytics", stage: "Series A" },
-];
+// In production, companies will be fetched from the API
+const sampleCompanies: CompanyOption[] = [];
 
 const memoTemplates = [
   { id: "standard", name: "Standard IC Memo", description: "Full memo with all sections" },
