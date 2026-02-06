@@ -25,7 +25,7 @@ The UI for activity logging and meeting scheduling exists, but the underlying fu
 - ~~**Dead buttons** in deal detail page (lines 520-528 have no onClick)~~ ✅ DONE
 
 ### Known Issues (Backlog)
-- **Documents page has placeholder data** - needs real document list from database
+- ~~**Documents page has placeholder data** - needs real document list from database~~ ✅ DONE
 
 ---
 

@@ -29,7 +29,7 @@ import {
   sourceTypeConfig,
   formatFileSize,
 } from "@/lib/types/documents";
-import { SAMPLE_DOCUMENTS } from "@/lib/storage/documents";
+import { useDocuments } from "@/hooks/use-documents";
 import { DocumentList } from "@/components/documents/document-card";
 import { DocumentViewer } from "@/components/documents/document-viewer";
 import { DocumentUploadModal } from "@/components/documents/document-uploader";
@@ -39,8 +39,10 @@ import { DocumentUploadModal } from "@/components/documents/document-uploader";
 // =============================================================================
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = React.useState<DocumentMetadata[]>(SAMPLE_DOCUMENTS);
-  const [filteredDocs, setFilteredDocs] = React.useState<DocumentMetadata[]>(SAMPLE_DOCUMENTS);
+  // Fetch documents from API
+  const { documents, isLoading, refetch } = useDocuments({ limit: 100 });
+
+  const [filteredDocs, setFilteredDocs] = React.useState<DocumentMetadata[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState<DocumentType | "ALL">("ALL");
   const [accessFilter, setAccessFilter] = React.useState<AccessLevel | "ALL">("ALL");
@@ -139,15 +141,21 @@ export default function DocumentsPage() {
     setViewingDocument(doc);
   };
 
-  const handleDelete = (doc: DocumentMetadata) => {
-    setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+  const handleDelete = async (doc: DocumentMetadata) => {
+    try {
+      const response = await fetch(`/api/documents/${doc.id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        refetch();
+      }
+    } catch (error) {
+      console.error("Failed to delete document:", error);
+    }
   };
 
-  const handleUploadComplete = (results: { success: boolean; document?: DocumentMetadata }[]) => {
-    const successfulUploads = results
-      .filter((r): r is { success: boolean; document: DocumentMetadata } => r.success && !!r.document)
-      .map((r) => r.document);
-    setDocuments((prev) => [...successfulUploads, ...prev]);
+  const handleUploadComplete = () => {
+    refetch();
     setShowUploadModal(false);
   };
 
@@ -429,19 +437,34 @@ export default function DocumentsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <DocumentList
-            documents={filteredDocs}
-            variant={viewMode === "grid" ? "grid" : "default"}
-            onView={handleView}
-            onDownload={handleDownload}
-            onShare={handleShare}
-            onDelete={handleDelete}
-            emptyMessage={
-              searchQuery
-                ? "No documents match your search"
-                : "No documents uploaded yet"
-            }
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg animate-pulse">
+                  <div className="w-12 h-12 bg-muted rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-48 bg-muted rounded" />
+                    <div className="h-3 w-32 bg-muted rounded" />
+                  </div>
+                  <div className="h-8 w-20 bg-muted rounded" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DocumentList
+              documents={filteredDocs}
+              variant={viewMode === "grid" ? "grid" : "default"}
+              onView={handleView}
+              onDownload={handleDownload}
+              onShare={handleShare}
+              onDelete={handleDelete}
+              emptyMessage={
+                searchQuery
+                  ? "No documents match your search"
+                  : "No documents uploaded yet"
+              }
+            />
+          )}
         </motion.div>
       </div>
 
