@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { DealActions } from "./deal-actions";
+import { DealActivityTimeline } from "./deal-activity-timeline";
+import { DealDocumentList } from "./deal-document-list";
 import {
   STAGE_CONFIG,
   PRIORITY_CONFIG,
@@ -324,6 +326,18 @@ export default async function DealDetailPage({ params }: PageProps) {
                 {deal.notes || "No notes yet."}
               </p>
             </Card>
+
+            {/* Activity Timeline */}
+            <DealActivityTimeline
+              dealId={deal.id}
+              initialCount={deal._count?.activities ?? 0}
+            />
+
+            {/* Documents */}
+            <DealDocumentList
+              dealId={deal.id}
+              initialCount={deal._count?.documents ?? 0}
+            />
 
             {/* Stage History Timeline */}
             {stageHistory.length > 0 && (

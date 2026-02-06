@@ -27,7 +27,23 @@ interface ActivityFormData {
   companyId: string;
   dealId: string;
   contactId: string;
+  // Meeting-specific fields
+  meetingType: string;
+  location: string;
+  duration: number;
 }
+
+// Meeting type options
+const MEETING_TYPES = [
+  { value: "initial_call", label: "Initial Call" },
+  { value: "follow_up", label: "Follow-up Call" },
+  { value: "due_diligence", label: "Due Diligence" },
+  { value: "partner_meeting", label: "Partner Meeting" },
+  { value: "board_meeting", label: "Board Meeting" },
+  { value: "pitch", label: "Pitch Meeting" },
+  { value: "networking", label: "Networking" },
+  { value: "other", label: "Other" },
+];
 
 interface ActivityModalProps {
   isOpen: boolean;
@@ -67,6 +83,9 @@ export function ActivityModal({
     companyId: defaultCompanyId,
     dealId: defaultDealId,
     contactId: defaultContactId,
+    meetingType: "initial_call",
+    location: "",
+    duration: 60,
   });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -84,6 +103,9 @@ export function ActivityModal({
         companyId: defaultCompanyId,
         dealId: defaultDealId,
         contactId: defaultContactId,
+        meetingType: "initial_call",
+        location: "",
+        duration: 60,
       });
       setError(null);
     }
@@ -270,18 +292,79 @@ export function ActivityModal({
                       </label>
                       <div className="relative">
                         <select
+                          value={formData.duration}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              duration: parseInt(e.target.value),
+                            }))
+                          }
                           className="w-full appearance-none bg-background border border-input rounded-md px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                         >
-                          <option value="30">30 minutes</option>
-                          <option value="60" selected>1 hour</option>
-                          <option value="90">1.5 hours</option>
-                          <option value="120">2 hours</option>
+                          <option value={15}>15 minutes</option>
+                          <option value={30}>30 minutes</option>
+                          <option value={45}>45 minutes</option>
+                          <option value={60}>1 hour</option>
+                          <option value={90}>1.5 hours</option>
+                          <option value={120}>2 hours</option>
                         </select>
                         <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                       </div>
                     </div>
                   )}
                 </div>
+
+                {/* Meeting-specific fields */}
+                {isMeetingType && (
+                  <div className="space-y-4 p-4 bg-purple-500/5 border border-purple-500/20 rounded-md">
+                    <h4 className="text-sm font-medium text-purple-400">Meeting Details</h4>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Meeting Type */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Meeting Type
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={formData.meetingType}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                meetingType: e.target.value,
+                              }))
+                            }
+                            className="w-full appearance-none bg-background border border-input rounded-md px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            {MEETING_TYPES.map((type) => (
+                              <option key={type.value} value={type.value}>
+                                {type.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Location/Link */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Location / Video Link
+                        </label>
+                        <Input
+                          value={formData.location}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
+                          placeholder="e.g., Zoom link or office address"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Context info (read-only) */}
                 {(defaultCompanyName || defaultDealName || defaultContactName) && (
