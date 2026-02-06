@@ -1,5 +1,24 @@
 export { prisma, default } from "./prisma";
 
+// Activity utilities
+export {
+  getActivities,
+  getActivityById,
+  createActivity,
+  updateActivity,
+  deleteActivity,
+  getUpcomingMeetings,
+  getRecentActivities,
+  getActivitiesByDeal,
+  getActivitiesByCompany,
+  getActivitiesByContact,
+  markActivityCompleted,
+  ACTIVITY_TYPE_CONFIG,
+  type ActivityInput,
+  type ActivityFilters,
+  type ActivityWithRelations,
+} from "./activities";
+
 // Company utilities
 export {
   getCompanies,

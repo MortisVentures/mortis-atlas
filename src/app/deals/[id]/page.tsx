@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { DealActions } from "./deal-actions";
 import {
   STAGE_CONFIG,
   PRIORITY_CONFIG,
@@ -514,20 +515,12 @@ export default async function DealDetailPage({ params }: PageProps) {
             </Card>
 
             {/* Quick Actions */}
-            <Card variant="raised" className="p-6">
-              <h3 className="font-display font-semibold mb-4">Actions</h3>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  Log Activity
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Schedule Meeting
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Add Document
-                </Button>
-              </div>
-            </Card>
+            <DealActions
+              dealId={deal.id}
+              dealName={deal.dealName}
+              companyId={deal.company.id}
+              companyName={deal.company.name}
+            />
 
             {/* Related Counts */}
             {deal._count && (

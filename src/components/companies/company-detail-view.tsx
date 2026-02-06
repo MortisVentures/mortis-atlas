@@ -41,6 +41,7 @@ import { Badge, StageBadge, BadgeGroup } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AddContactDialog } from "./add-contact-dialog";
+import { ActivityModal, type ActivityFormData } from "@/components/activities";
 
 // =============================================================================
 // TYPES
@@ -373,13 +374,39 @@ interface CompanyDetailViewProps {
 }
 
 export function CompanyDetailView({ company }: CompanyDetailViewProps) {
-  const _router = useRouter();
+  const router = useRouter();
   const [activeTab, setActiveTab] = React.useState<"overview" | "team" | "activity" | "notes">("overview");
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({
     metrics: true,
     pipeline: true,
     financials: true,
   });
+  const [showActivityModal, setShowActivityModal] = React.useState(false);
+
+  const handleSaveActivity = async (data: ActivityFormData) => {
+    const response = await fetch("/api/activities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: data.type,
+        subject: data.subject,
+        description: data.description || null,
+        activityDate: data.activityDate ? new Date(data.activityDate).toISOString() : undefined,
+        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+        companyId: data.companyId || null,
+        dealId: data.dealId || null,
+        contactId: data.contactId || null,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to save activity");
+    }
+
+    // Refresh the page to show updated activity count
+    router.refresh();
+  };
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -610,7 +637,9 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
               <Card variant="raised">
                 <CardHeader layout="row" withBorder>
                   <CardTitle size="lg">Activity Timeline</CardTitle>
-                  <Button size="sm"><PlusIcon className="size-4 mr-2" />Log Activity</Button>
+                  <Button size="sm" onClick={() => setShowActivityModal(true)}>
+                    <PlusIcon className="size-4 mr-2" />Log Activity
+                  </Button>
                 </CardHeader>
                 <CardContent padding="lg">
                   {company.activities.length > 0 ? (
@@ -623,7 +652,9 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
                     <div className="text-center py-8 text-muted-foreground">
                       <CalendarIcon className="size-8 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">No activities logged yet</p>
-                      <Button variant="outline" size="sm" className="mt-4"><PlusIcon className="size-4 mr-2" />Log First Activity</Button>
+                      <Button variant="outline" size="sm" className="mt-4" onClick={() => setShowActivityModal(true)}>
+                        <PlusIcon className="size-4 mr-2" />Log First Activity
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -653,6 +684,15 @@ export function CompanyDetailView({ company }: CompanyDetailViewProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Activity Modal */}
+        <ActivityModal
+          isOpen={showActivityModal}
+          onClose={() => setShowActivityModal(false)}
+          onSave={handleSaveActivity}
+          defaultCompanyId={company.id}
+          defaultCompanyName={company.name}
+        />
       </DashboardContent>
     </DashboardLayout>
   );
