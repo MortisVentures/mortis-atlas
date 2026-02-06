@@ -74,37 +74,44 @@ Mortis Atlas is a VC fund CRM and portfolio management platform built with Next.
 - Updated referrer-management component to default to `[]` instead of sample data
 - Updated source-tracking component enum values and renamed `DealSource` interface to `DealSourceInfo`
 
-## Current Sprint: Activity/Meeting Infrastructure (Feb 5-6, 2026)
+## Completed Sprint: Activity/Meeting Infrastructure (Feb 5-6, 2026)
 
 **Full plan:** See `PLAN.md`
 
-### Problem
-Dead buttons throughout the app - Log Activity, Schedule Meeting, Add Document buttons have no onClick handlers. Activity model exists in Prisma but no API/UI to use it.
+### Problem (Resolved)
+Dead buttons throughout the app - Log Activity, Schedule Meeting, Add Document buttons had no onClick handlers. Activity model existed in Prisma but no API/UI to use it.
 
-### Phase 1: Critical Fixes ✅ COMPLETE (Feb 6, 2026)
+### Phase 1: Critical Fixes ✅ COMPLETE
 1. ✅ **Activity Infrastructure** - Created `src/lib/db/activities.ts`, `/api/activities` routes
 2. ✅ **ActivityModal Component** - Form for logging activities with type, subject, description, associations
 3. ✅ **Wire Deal Page Buttons** - Created `DealActions` client component with modal state/handlers
 4. ✅ **Wire Company Page Button** - Added modal to company-detail-view.tsx
 
-**Files Created:**
+### Phase 2: Meeting Enhancement ✅ COMPLETE
+5. ✅ **Meeting-specific fields** - When type=MEETING, shows meeting type, location, duration
+6. ✅ **Meeting list component** - MeetingList and MeetingCard components with useMeetings hook
+7. ✅ **Dashboard integration** - Schedule Meeting quick action opens modal, MeetingCard shows upcoming
+
+### Phase 3: Activity Display ✅ COMPLETE
+8. ✅ **Activity timeline on deal page** - DealActivityTimeline fetches and displays activities
+9. ✅ **Document section on deal page** - DealDocumentList shows associated documents
+10. ✅ **Documents page real data** - Connected to database via useDocuments hook
+
+**Files Created (All Phases):**
 - `src/lib/db/activities.ts` - CRUD helpers
 - `src/lib/validations/activity.ts` - Zod validation schemas
 - `src/app/api/activities/route.ts` - GET/POST
 - `src/app/api/activities/[id]/route.ts` - GET/PUT/DELETE
 - `src/lib/activities/activity-config.ts` - Client-safe activity type config
 - `src/lib/activities/index.ts` - Barrel export
-- `src/components/activities/activity-modal.tsx` - Modal form
+- `src/components/activities/activity-modal.tsx` - Modal form with meeting-specific fields
+- `src/components/activities/meeting-list.tsx` - MeetingList and MeetingCard components
 - `src/components/activities/index.ts` - Components barrel export
 - `src/app/deals/[id]/deal-actions.tsx` - Client component for deal actions
-
-### Phase 2: Meeting Enhancement (Next)
-5. **Meeting-specific fields** - When type=MEETING, show meeting type, location, duration
-6. **Meeting list component** - Filter activities by type=MEETING
-
-### Phase 3: Activity Display
-7. **Activity feed on deal page** - Make counts clickable, show timeline
-8. **Document section clickable** - Quick access to deal documents
+- `src/app/deals/[id]/deal-activity-timeline.tsx` - Activity timeline on deal page
+- `src/app/deals/[id]/deal-document-list.tsx` - Document list on deal page
+- `src/hooks/use-meetings.ts` - Hook for fetching meetings from API
+- `src/hooks/use-documents.ts` - Hook for fetching documents from API
 
 ## Build & Dev
 ```bash
