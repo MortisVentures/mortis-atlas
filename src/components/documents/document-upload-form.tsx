@@ -260,18 +260,20 @@ export function DocumentUploadForm({
 
   // Handle company selection
   const handleCompanySelect = (companyId: string) => {
-    const company = companies.find((c) => c.id === companyId) || null;
+    const actualValue = companyId === "__none__" ? "" : companyId;
+    const company = companies.find((c) => c.id === actualValue) || null;
     setSelectedCompany(company);
     setSelectedDeal(null);
-    form.setValue("companyId", companyId);
+    form.setValue("companyId", actualValue || undefined);
     form.setValue("dealId", undefined);
   };
 
   // Handle deal selection
   const handleDealSelect = (dealId: string) => {
-    const deal = deals.find((d) => d.id === dealId) || null;
+    const actualValue = dealId === "__none__" ? "" : dealId;
+    const deal = deals.find((d) => d.id === actualValue) || null;
     setSelectedDeal(deal);
-    form.setValue("dealId", dealId);
+    form.setValue("dealId", actualValue || undefined);
   };
 
   // Submit form
@@ -616,7 +618,7 @@ export function DocumentUploadForm({
                   <FormLabel>Company</FormLabel>
                   <Select
                     onValueChange={handleCompanySelect}
-                    value={field.value || ""}
+                    value={field.value || "__none__"}
                   >
                     <FormControl>
                       <SelectTrigger className="bg-background">
@@ -624,7 +626,7 @@ export function DocumentUploadForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No company selected</SelectItem>
+                      <SelectItem value="__none__">No company selected</SelectItem>
                       {companies.map((company) => (
                         <SelectItem key={company.id} value={company.id}>
                           {company.name}
@@ -661,7 +663,7 @@ export function DocumentUploadForm({
                     <FormLabel>Deal</FormLabel>
                     <Select
                       onValueChange={handleDealSelect}
-                      value={field.value || ""}
+                      value={field.value || "__none__"}
                       disabled={isLoadingDeals}
                     >
                       <FormControl>
@@ -678,7 +680,7 @@ export function DocumentUploadForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No deal selected</SelectItem>
+                        <SelectItem value="__none__">No deal selected</SelectItem>
                         {deals.map((deal) => (
                           <SelectItem key={deal.id} value={deal.id}>
                             {deal.dealName}
