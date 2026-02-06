@@ -207,7 +207,7 @@ export function DocumentUploadForm({
       }
     };
     fetchDeals();
-  }, [selectedCompany?.id]);
+  }, [selectedCompany]);
 
   // Handle file selection
   const handleFileSelect = (selectedFile: File) => {

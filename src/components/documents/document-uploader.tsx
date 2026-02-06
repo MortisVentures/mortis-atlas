@@ -259,7 +259,7 @@ export function DocumentUploader({
     onUploadComplete?.(results);
   };
 
-  // Cleanup previews on unmount
+  // Cleanup previews on unmount only (intentionally not re-running on queue changes)
   React.useEffect(() => {
     return () => {
       uploadQueue.forEach((item) => {
@@ -268,6 +268,7 @@ export function DocumentUploader({
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pendingCount = uploadQueue.filter((i) => i.status === "pending").length;
