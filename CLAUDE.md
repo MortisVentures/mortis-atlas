@@ -113,6 +113,33 @@ Dead buttons throughout the app - Log Activity, Schedule Meeting, Add Document b
 - `src/hooks/use-meetings.ts` - Hook for fetching meetings from API
 - `src/hooks/use-documents.ts` - Hook for fetching documents from API
 
+## Completed: Portfolio Page + Dashboard Real Data (Feb 6, 2026)
+
+### Sector Updates
+- Updated `SECTOR_OPTIONS` in `src/lib/validations/company.ts` to Mortis Ventures thesis-aligned sectors:
+  - Triple-Use, Autonomy, Robotics, Power, Compute, Industry 4.0, AI, Other
+
+### Portfolio Page Enhancements (`/deals/portfolio`)
+- Added `AreaChart` showing cumulative portfolio growth over time (by deal close date)
+- Added `DonutChart` showing sector distribution of portfolio companies
+- Charts appear in 2-column grid between metrics cards and search
+
+### Dashboard Real Data Connection
+- Created `src/hooks/use-dashboard-stats.ts` hook that fetches from `/api/deals/stats` and `/api/deals?stage=CLOSED_WON` in parallel
+- Updated `src/app/dashboard/page.tsx` to use real data for KPIGrid:
+  - Total AUM = total invested from CLOSED_WON deals
+  - Portfolio Companies = actual count with sector breakdown
+  - Active Deals = real count with conversion rate
+  - Pipeline Value = actual pipeline value from active deals
+- Added `isLoading` prop to `KPIGrid` component for skeleton state
+
+**Files Modified/Created:**
+- `src/lib/validations/company.ts` - Updated SECTOR_OPTIONS
+- `src/app/deals/portfolio/page.tsx` - Added charts
+- `src/hooks/use-dashboard-stats.ts` - New hook
+- `src/app/dashboard/page.tsx` - Uses real stats
+- `src/components/dashboard/kpi-grid.tsx` - Added loading state
+
 ## Build & Dev
 ```bash
 pnpm dev        # Start dev server

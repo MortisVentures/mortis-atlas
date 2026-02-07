@@ -4,6 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
+  AreaChart,
+  DonutChart,
+} from "@tremor/react";
+import {
   StarFilledIcon,
   CalendarIcon,
   ExternalLinkIcon,
@@ -131,6 +135,46 @@ export default function PortfolioPage() {
       avgInvestment,
     };
   }, [filteredDeals]);
+
+  // Calculate portfolio growth data (cumulative investment over time)
+  const growthData = React.useMemo(() => {
+    // Filter deals with valid close dates and sort by date
+    const dealsWithDates = deals
+      .filter((deal) => deal.actualClose)
+      .sort((a, b) => new Date(a.actualClose!).getTime() - new Date(b.actualClose!).getTime());
+
+    if (dealsWithDates.length === 0) return [];
+
+    // Group by month and calculate cumulative
+    const byMonth: Record<string, number> = {};
+    let cumulative = 0;
+
+    dealsWithDates.forEach((deal) => {
+      const date = new Date(deal.actualClose!);
+      const month = date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+      cumulative += deal.amount || 0;
+      byMonth[month] = cumulative;
+    });
+
+    return Object.entries(byMonth).map(([month, value]) => ({
+      month,
+      "Portfolio Value": value,
+    }));
+  }, [deals]);
+
+  // Calculate sector distribution data
+  const sectorData = React.useMemo(() => {
+    const bySector: Record<string, number> = {};
+
+    deals.forEach((deal) => {
+      const sector = deal.company.sector || "Other";
+      bySector[sector] = (bySector[sector] || 0) + 1;
+    });
+
+    return Object.entries(bySector)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [deals]);
 
   return (
     <DashboardLayout>
@@ -269,6 +313,80 @@ export default function PortfolioPage() {
               </div>
             </Card>
           </motion.div>
+
+          {/* Charts Section */}
+          {!isLoading && !error && deals.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            >
+              {/* Portfolio Growth Chart */}
+              <Card variant="raised" className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Portfolio Growth</h3>
+                {growthData.length > 0 ? (
+                  <AreaChart
+                    data={growthData}
+                    index="month"
+                    categories={["Portfolio Value"]}
+                    colors={["emerald"]}
+                    valueFormatter={(value) => formatCurrency(value)}
+                    showLegend={false}
+                    showGridLines={false}
+                    className="h-48"
+                  />
+                ) : (
+                  <div className="h-48 flex items-center justify-center text-muted-foreground">
+                    No investment timeline data
+                  </div>
+                )}
+              </Card>
+
+              {/* Sector Distribution Chart */}
+              <Card variant="raised" className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Sector Distribution</h3>
+                {sectorData.length > 0 ? (
+                  <div className="flex items-center gap-6">
+                    <div className="w-40 h-40">
+                      <DonutChart
+                        data={sectorData}
+                        index="name"
+                        category="value"
+                        colors={["emerald", "cyan", "blue", "indigo", "violet", "purple", "fuchsia", "rose"]}
+                        showLabel={false}
+                        className="h-full"
+                      />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      {sectorData.slice(0, 6).map((item) => (
+                        <div
+                          key={item.name}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-muted-foreground truncate">
+                            {item.name}
+                          </span>
+                          <span className="font-mono font-medium">
+                            {item.value} {item.value === 1 ? "company" : "companies"}
+                          </span>
+                        </div>
+                      ))}
+                      {sectorData.length > 6 && (
+                        <div className="text-xs text-muted-foreground">
+                          +{sectorData.length - 6} more sectors
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-40 flex items-center justify-center text-muted-foreground">
+                    No sector data
+                  </div>
+                )}
+              </Card>
+            </motion.div>
+          )}
 
           {/* Search */}
           <motion.div

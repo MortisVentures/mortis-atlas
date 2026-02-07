@@ -34,30 +34,16 @@ export const EMPLOYEE_COUNT_OPTIONS = [
   "5000+",
 ] as const;
 
-// Sector options
+// Sector options - Mortis Ventures thesis-aligned sectors
 export const SECTOR_OPTIONS = [
-  "AI/ML",
-  "Biotech",
-  "CleanTech",
-  "Consumer",
-  "Crypto/Web3",
-  "Cybersecurity",
-  "E-commerce",
-  "EdTech",
-  "Enterprise",
-  "FinTech",
-  "Gaming",
-  "HealthTech",
-  "Infrastructure",
-  "InsurTech",
-  "Logistics",
-  "Marketplace",
-  "Media",
-  "PropTech",
-  "Robotics",
-  "SaaS",
-  "SpaceTech",
-  "Other",
+  "Triple-Use",    // Dual-use + commercial
+  "Autonomy",      // Autonomous systems
+  "Robotics",      // Robotics & mechatronics
+  "Power",         // Energy & power systems
+  "Compute",       // Computing & semiconductors
+  "Industry 4.0",  // Smart manufacturing
+  "AI",            // Artificial intelligence
+  "Other",         // Catch-all
 ] as const;
 
 // Base schema for company fields

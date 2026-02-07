@@ -29,6 +29,7 @@ import { ActivityModal, MeetingCard, type ActivityFormData } from "@/components/
 
 // Hooks
 import { useMeetings } from "@/hooks/use-meetings";
+import { useDashboardStats } from "@/hooks/use-dashboard-stats";
 
 import { toast } from "sonner";
 
@@ -45,6 +46,9 @@ export default function DashboardPage() {
   const { meetings, isLoading: meetingsLoading, markComplete, refetch: refetchMeetings } = useMeetings({
     limit: 10,
   });
+
+  // Fetch dashboard stats
+  const { stats, isLoading: statsLoading } = useDashboardStats();
 
   // Register keyboard shortcut for Add Company
   useAddCompanyShortcut(() => setIsAddCompanyOpen(true));
@@ -131,7 +135,26 @@ export default function DashboardPage() {
 
         {/* KPI Grid */}
         <PageSection title="Key Metrics">
-          <KPIGrid />
+          <KPIGrid
+            isLoading={statsLoading}
+            totalAUM={stats?.totalInvested || 0}
+            aumChange={0}
+            portfolioCount={stats?.portfolioCount || 0}
+            newCompanies={0}
+            stageDistribution={
+              stats?.sectorDistribution?.slice(0, 4).map((s, i) => ({
+                name: s.name,
+                value: s.value,
+                color: (["cyan", "blue", "indigo", "violet"] as const)[i % 4],
+              })) || []
+            }
+            activeDeals={stats?.activeDeals || 0}
+            conversionRate={stats?.conversionRate || 0}
+            dealStages={stats?.dealStages || []}
+            pipelineValue={stats?.pipelineValue || 0}
+            weightedPipeline={Math.round((stats?.pipelineValue || 0) * 0.6)}
+            pipelineChange={0}
+          />
         </PageSection>
 
         {/* Deal Flow Chart */}
@@ -140,13 +163,15 @@ export default function DashboardPage() {
         </PageSection>
 
         {/* Upcoming Meetings */}
-        <MeetingCard
-          meetings={meetings}
-          isLoading={meetingsLoading}
-          onMarkComplete={markComplete}
-          showViewAll
-          viewAllHref="/tasks"
-        />
+        <PageSection>
+          <MeetingCard
+            meetings={meetings}
+            isLoading={meetingsLoading}
+            onMarkComplete={markComplete}
+            showViewAll
+            viewAllHref="/tasks"
+          />
+        </PageSection>
 
         {/* Pipeline + Activity Row */}
         <div className="grid gap-6 lg:grid-cols-2">

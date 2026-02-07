@@ -484,6 +484,8 @@ function PipelineValueCard({
 
 export interface KPIGridProps {
   className?: string;
+  // Loading state
+  isLoading?: boolean;
   // AUM data
   totalAUM?: number;
   aumChange?: number;
@@ -505,6 +507,8 @@ export interface KPIGridProps {
 
 export function KPIGrid({
   className,
+  // Loading state
+  isLoading = false,
   // Default values for demo
   totalAUM = 142500000,
   aumChange = 12.4,
@@ -520,6 +524,11 @@ export function KPIGrid({
   pipelineChange = 8.2,
   pipelineHistory = pipelineHistoryData,
 }: KPIGridProps) {
+  // Show skeleton when loading
+  if (isLoading) {
+    return <KPIGridSkeleton />;
+  }
+
   return (
     <div
       className={cn(
