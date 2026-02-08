@@ -1,11 +1,32 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Meeting } from "@/components/activities";
 
 // =============================================================================
 // TYPES
 // =============================================================================
+
+// Define Meeting type inline to avoid circular dependency
+export interface Meeting {
+  id: string;
+  subject: string;
+  description: string | null;
+  activityDate: string;
+  completed: boolean;
+  company: {
+    id: string;
+    name: string;
+  } | null;
+  deal: {
+    id: string;
+    dealName: string;
+  } | null;
+  contact: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
 
 export interface UseMeetingsOptions {
   companyId?: string;
@@ -32,7 +53,7 @@ export function useMeetings(options: UseMeetingsOptions = {}): UseMeetingsReturn
   const { companyId, dealId, contactId, limit = 20, autoFetch = true } = options;
 
   const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(autoFetch);
   const [error, setError] = useState<string | null>(null);
 
   // Build query string

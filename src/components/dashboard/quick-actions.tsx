@@ -115,7 +115,7 @@ const defaultActions: QuickAction[] = [
     label: "Review IC Memos",
     icon: <FileTextIcon className="size-6" />,
     shortcut: "⌘ I",
-    href: "/memos",
+    href: "/ic-memos",
     color: "amber",
   },
 ];

@@ -550,7 +550,7 @@ export const defaultNavItems: NavItemProps[] = [
   },
   {
     label: "Portfolio",
-    href: "/portfolio",
+    href: "/deals/portfolio",
     icon: "portfolio",
   },
   {

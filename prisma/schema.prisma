@@ -356,17 +356,67 @@ model ICMemo {
   id              String       @id @default(cuid())
   title           String
   status          ICMemoStatus @default(DRAFT)
-  recommendation  String?
-  requestedAmount Decimal?     @db.Decimal(15, 2)
-  proposedTerms   String?
   companyId       String
   dealId          String?
   authorId        String
-  content         Json?
   votingDeadline  DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   submittedAt     DateTime?
+
+  // === Thesis Alignment ===
+  focusArea       String?      // Space & Defense, Autonomous, etc.
+  stage           String?      // Pre-Seed, Seed, Series A
+
+  // === Scores (queryable) ===
+  tripleUseScore         ScoreRating?
+  wlcdiaScore            ScoreRating?
+  expectedCostDecline    Decimal?     @db.Decimal(5, 2)
+  teamScore              ScoreRating?
+  founderTechRating      Int?         // 1-5
+  founderBusinessRating  Int?         // 1-5
+  founderDesignRating    Int?         // 1-5
+  marketScore            ScoreRating?
+  capitalEfficiencyScore ScoreRating?
+
+  // === Market Sizing ===
+  tam             Decimal?     @db.Decimal(15, 2)
+  sam             Decimal?     @db.Decimal(15, 2)
+  som             Decimal?     @db.Decimal(15, 2)
+
+  // === Capital Metrics ===
+  trlStage        Int?         // Technology Readiness Level 1-9
+  monthlyBurn     Decimal?     @db.Decimal(15, 2)
+  runwayMonths    Int?
+
+  // === Financial Terms (Ask) ===
+  askAmount       Decimal?     @db.Decimal(15, 2)
+  askValuation    Decimal?     @db.Decimal(15, 2)
+
+  // === Financial Terms (Proposed) ===
+  preMoneyValuation  Decimal?  @db.Decimal(15, 2)
+  postMoneyValuation Decimal?  @db.Decimal(15, 2)
+  roundSize          Decimal?  @db.Decimal(15, 2)
+  mortisInvestment   Decimal?  @db.Decimal(15, 2)
+  mortisOwnership    Decimal?  @db.Decimal(5, 4)  // e.g., 0.1000 = 10%
+  followOnReserve    Decimal?  @db.Decimal(15, 2)
+
+  // === Projections ===
+  projectedExitYears Int?
+  targetExitLow      Decimal?  @db.Decimal(15, 2)
+  targetExitHigh     Decimal?  @db.Decimal(15, 2)
+  projectedMoicLow   Decimal?  @db.Decimal(5, 2)
+  projectedMoicHigh  Decimal?  @db.Decimal(5, 2)
+
+  // === Decision ===
+  memoRecommendation ICMemoRecommendation?
+  decisionRationale  String?
+  finalDecision      ICMemoDecision?
+
+  // === Narrative Content (JSON) ===
+  content         Json?
+
+  // === Relations ===
   documents       Document[]
   author          User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -377,6 +427,9 @@ model ICMemo {
   @@index([companyId])
   @@index([dealId])
   @@index([status])
+  @@index([memoRecommendation])
+  @@index([finalDecision])
+  @@index([focusArea])
 }
 
 model ICMemoVote {
@@ -542,6 +595,25 @@ enum VoteType {
   YES
   NO
   ABSTAIN
+}
+
+enum ScoreRating {
+  STRONG
+  MODERATE
+  WEAK
+  ADEQUATE
+}
+
+enum ICMemoRecommendation {
+  INVEST
+  PASS
+  REVISIT
+}
+
+enum ICMemoDecision {
+  APPROVED
+  DECLINED
+  DEFERRED
 }
 
 enum AuditAction {

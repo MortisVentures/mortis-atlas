@@ -62,7 +62,7 @@ const navigationPages: SearchResult[] = [
   { id: "nav-companies", type: "page", title: "Companies", subtitle: "Pipeline companies", href: "/companies", icon: <GlobeIcon className="size-4" /> },
   { id: "nav-contacts", type: "page", title: "Contacts", subtitle: "Network contacts", href: "/contacts", icon: <PersonIcon className="size-4" /> },
   { id: "nav-deals", type: "page", title: "Deals", subtitle: "Active deals", href: "/deals", icon: <RocketIcon className="size-4" /> },
-  { id: "nav-portfolio", type: "page", title: "Portfolio", subtitle: "Portfolio companies", href: "/portfolio", icon: <BarChartIcon className="size-4" /> },
+  { id: "nav-portfolio", type: "page", title: "Portfolio", subtitle: "Portfolio companies", href: "/deals/portfolio", icon: <BarChartIcon className="size-4" /> },
   { id: "nav-activities", type: "page", title: "Activities", subtitle: "Recent activities", href: "/activities", icon: <CalendarIcon className="size-4" /> },
   { id: "nav-analytics", type: "page", title: "Analytics", subtitle: "Performance insights", href: "/analytics", icon: <BarChartIcon className="size-4" /> },
 ];

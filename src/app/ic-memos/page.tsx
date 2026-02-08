@@ -12,6 +12,7 @@ import {
   ClockIcon,
   Pencil1Icon,
   DownloadIcon,
+  ReloadIcon,
 } from "@radix-ui/react-icons";
 
 import {
@@ -24,101 +25,47 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-// =============================================================================
-// TYPES
-// =============================================================================
-
-type MemoStatus = "DRAFT" | "PENDING_VOTE" | "APPROVED" | "REJECTED" | "ARCHIVED";
-
-interface ICMemo {
-  id: string;
-  title: string;
-  companyId: string;
-  companyName: string;
-  sector: string;
-  dealId: string | null;
-  status: MemoStatus;
-  investmentAmount: number;
-  preMoneyValuation: number;
-  ownershipTarget: number;
-  author: string;
-  authorAvatar?: string;
-  createdAt: string;
-  updatedAt: string;
-  votingDeadline: string | null;
-  votes: {
-    yes: number;
-    no: number;
-    abstain: number;
-    total: number;
-    quorum: number;
-  };
-  version: number;
-}
-
-// =============================================================================
-// SAMPLE DATA
-// =============================================================================
-
-const sampleMemos: ICMemo[] = [];
+import { useICMemos, type ICMemoFromAPI } from "@/hooks/use-ic-memos";
+import { ICMemoStatus } from "@prisma/client";
+import {
+  STATUS_CONFIG,
+  RECOMMENDATION_CONFIG,
+} from "@/lib/validations/ic-memo";
 
 // =============================================================================
 // STATUS CONFIG
 // =============================================================================
 
-const statusConfig: Record<MemoStatus, { label: string; color: string; icon: React.ReactNode }> = {
-  DRAFT: {
-    label: "Draft",
-    color: "bg-slate-500/20 text-slate-300 border-slate-500/30",
-    icon: <Pencil1Icon className="size-3.5" />,
-  },
-  PENDING_VOTE: {
-    label: "Pending Vote",
-    color: "bg-amber-500/20 text-amber-300 border-amber-500/30",
-    icon: <ClockIcon className="size-3.5" />,
-  },
-  APPROVED: {
-    label: "Approved",
-    color: "bg-tactical-500/20 text-tactical-300 border-tactical-500/30",
-    icon: <CheckCircledIcon className="size-3.5" />,
-  },
-  REJECTED: {
-    label: "Rejected",
-    color: "bg-red-500/20 text-red-300 border-red-500/30",
-    icon: <CrossCircledIcon className="size-3.5" />,
-  },
-  ARCHIVED: {
-    label: "Archived",
-    color: "bg-neutral-500/20 text-neutral-400 border-neutral-500/30",
-    icon: <FileTextIcon className="size-3.5" />,
-  },
+const statusIconMap: Record<ICMemoStatus, React.ReactNode> = {
+  DRAFT: <Pencil1Icon className="size-3.5" />,
+  SUBMITTED: <ClockIcon className="size-3.5" />,
+  UNDER_REVIEW: <ClockIcon className="size-3.5" />,
+  PENDING_VOTE: <ClockIcon className="size-3.5" />,
+  APPROVED: <CheckCircledIcon className="size-3.5" />,
+  REJECTED: <CrossCircledIcon className="size-3.5" />,
+  WITHDRAWN: <FileTextIcon className="size-3.5" />,
 };
 
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
 
-function formatCurrency(value: number, compact = true): string {
+function formatCurrency(value: number | string | null | undefined, compact = true): string {
+  if (value === null || value === undefined) return "-";
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num)) return "-";
+
   if (compact) {
-    if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-    return `$${value}`;
+    if (num >= 1000000000) return `$${(num / 1000000000).toFixed(1)}B`;
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K`;
+    return `$${num}`;
   }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  }).format(num);
 }
 
 function formatRelativeDate(dateString: string): string {
@@ -130,7 +77,11 @@ function formatRelativeDate(dateString: string): string {
   if (diffInDays === 1) return "Yesterday";
   if (diffInDays < 7) return `${diffInDays} days ago`;
   if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-  return formatDate(dateString);
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function getDaysUntilDeadline(deadline: string | null): number | null {
@@ -144,53 +95,55 @@ function getDaysUntilDeadline(deadline: string | null): number | null {
 // COMPONENTS
 // =============================================================================
 
-function StatusBadge({ status }: { status: MemoStatus }) {
-  const config = statusConfig[status];
+function StatusBadge({ status }: { status: ICMemoStatus }) {
+  const config = STATUS_CONFIG[status];
+  const icon = statusIconMap[status];
   return (
     <Badge className={cn("gap-1.5", config.color)} size="sm">
-      {config.icon}
+      {icon}
       {config.label}
     </Badge>
   );
 }
 
-function VotingProgress({ votes }: { votes: ICMemo["votes"] }) {
-  const total = votes.yes + votes.no + votes.abstain;
-  const quorumPercent = Math.min(100, (total / votes.quorum) * 100);
-  const _yesPercent = total > 0 ? (votes.yes / total) * 100 : 0;
-  const _noPercent = total > 0 ? (votes.no / total) * 100 : 0;
+function VotingProgress({ votes }: { votes: ICMemoFromAPI["votes"] }) {
+  const yes = votes.filter((v) => v.vote === "YES").length;
+  const no = votes.filter((v) => v.vote === "NO").length;
+  const abstain = votes.filter((v) => v.vote === "ABSTAIN").length;
+  const total = votes.length;
+  const quorum = 3; // Configurable quorum
+
+  const quorumPercent = Math.min(100, (total / quorum) * 100);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">
-          {total} of {votes.quorum} votes ({votes.quorum - total} needed)
+          {total} of {quorum} votes ({Math.max(0, quorum - total)} needed)
         </span>
-        <span className={cn(total >= votes.quorum ? "text-tactical-400" : "text-muted-foreground")}>
-          {total >= votes.quorum ? "Quorum reached" : "Quorum pending"}
+        <span className={cn(total >= quorum ? "text-tactical-400" : "text-muted-foreground")}>
+          {total >= quorum ? "Quorum reached" : "Quorum pending"}
         </span>
       </div>
-      {/* Quorum bar */}
       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-navy-500 to-tactical-500 transition-all"
           style={{ width: `${quorumPercent}%` }}
         />
       </div>
-      {/* Vote breakdown */}
       {total > 0 && (
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-tactical-500" />
-            Yes: {votes.yes}
+            Yes: {yes}
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-red-500" />
-            No: {votes.no}
+            No: {no}
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-slate-500" />
-            Abstain: {votes.abstain}
+            Abstain: {abstain}
           </span>
         </div>
       )}
@@ -198,8 +151,15 @@ function VotingProgress({ votes }: { votes: ICMemo["votes"] }) {
   );
 }
 
-function MemoCard({ memo }: { memo: ICMemo }) {
+function MemoCard({ memo }: { memo: ICMemoFromAPI }) {
   const daysUntilDeadline = getDaysUntilDeadline(memo.votingDeadline);
+  const authorName = memo.author.name || memo.author.email || "Unknown";
+  const authorInitials = authorName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <motion.div
@@ -218,18 +178,35 @@ function MemoCard({ memo }: { memo: ICMemo }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold truncate">{memo.title}</h3>
-                  <Badge variant="ghost" size="xs">v{memo.version}</Badge>
+                  {memo.memoRecommendation && (
+                    <Badge
+                      className={cn("text-xs", RECOMMENDATION_CONFIG[memo.memoRecommendation].color)}
+                      size="xs"
+                    >
+                      {RECOMMENDATION_CONFIG[memo.memoRecommendation].label}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Link
-                    href={`/companies/${memo.companyId}`}
+                    href={`/companies/${memo.company.id}`}
                     className="hover:text-foreground transition-colors"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {memo.companyName}
+                    {memo.company.name}
                   </Link>
-                  <span>•</span>
-                  <span>{memo.sector}</span>
+                  {memo.company.sector && (
+                    <>
+                      <span>•</span>
+                      <span>{memo.company.sector}</span>
+                    </>
+                  )}
+                  {memo.focusArea && (
+                    <>
+                      <span>•</span>
+                      <span>{memo.focusArea}</span>
+                    </>
+                  )}
                 </div>
               </div>
               <StatusBadge status={memo.status} />
@@ -239,20 +216,24 @@ function MemoCard({ memo }: { memo: ICMemo }) {
             <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-y border-border">
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Investment</div>
-                <div className="font-mono font-semibold">{formatCurrency(memo.investmentAmount)}</div>
+                <div className="font-mono font-semibold">{formatCurrency(memo.mortisInvestment)}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-0.5">Pre-Money</div>
                 <div className="font-mono font-semibold">{formatCurrency(memo.preMoneyValuation)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground mb-0.5">Target %</div>
-                <div className="font-mono font-semibold">{memo.ownershipTarget}%</div>
+                <div className="text-xs text-muted-foreground mb-0.5">Ownership</div>
+                <div className="font-mono font-semibold">
+                  {memo.mortisOwnership
+                    ? `${(parseFloat(memo.mortisOwnership) * 100).toFixed(1)}%`
+                    : "-"}
+                </div>
               </div>
             </div>
 
             {/* Voting Progress (for pending votes) */}
-            {memo.status === "PENDING_VOTE" && (
+            {(memo.status === "PENDING_VOTE" || memo.status === "SUBMITTED" || memo.status === "UNDER_REVIEW") && memo.votes.length > 0 && (
               <div className="mb-4">
                 <VotingProgress votes={memo.votes} />
               </div>
@@ -262,9 +243,9 @@ function MemoCard({ memo }: { memo: ICMemo }) {
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-navy-500 to-tactical-500 flex items-center justify-center text-white text-[10px] font-medium">
-                  {memo.author.split(" ").map((n) => n[0]).join("")}
+                  {authorInitials}
                 </div>
-                <span>{memo.author}</span>
+                <span>{authorName}</span>
               </div>
               <div className="flex items-center gap-3">
                 {memo.status === "PENDING_VOTE" && daysUntilDeadline !== null && (
@@ -292,11 +273,13 @@ function StatCard({
   value,
   icon,
   trend,
+  isLoading,
 }: {
   title: string;
   value: string | number;
   icon: React.ReactNode;
   trend?: { direction: "up" | "down"; value: string };
+  isLoading?: boolean;
 }) {
   return (
     <Card variant="raised">
@@ -306,9 +289,13 @@ function StatCard({
         </div>
         <div>
           <div className="text-sm text-muted-foreground">{title}</div>
-          <div className="text-2xl font-semibold font-mono">{value}</div>
+          {isLoading ? (
+            <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+          ) : (
+            <div className="text-2xl font-semibold font-mono">{value}</div>
+          )}
         </div>
-        {trend && (
+        {trend && !isLoading && (
           <div
             className={cn(
               "ml-auto text-sm font-medium",
@@ -359,48 +346,99 @@ function FilterTab({
   );
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {[1, 2, 3, 4].map((i) => (
+        <Card key={i} variant="raised">
+          <CardContent padding="lg">
+            <div className="animate-pulse space-y-4">
+              <div className="flex justify-between">
+                <div className="space-y-2">
+                  <div className="h-5 w-48 bg-muted rounded" />
+                  <div className="h-4 w-32 bg-muted rounded" />
+                </div>
+                <div className="h-6 w-20 bg-muted rounded" />
+              </div>
+              <div className="grid grid-cols-3 gap-4 py-3 border-y border-border">
+                <div className="space-y-1">
+                  <div className="h-3 w-16 bg-muted rounded" />
+                  <div className="h-5 w-20 bg-muted rounded" />
+                </div>
+                <div className="space-y-1">
+                  <div className="h-3 w-16 bg-muted rounded" />
+                  <div className="h-5 w-20 bg-muted rounded" />
+                </div>
+                <div className="space-y-1">
+                  <div className="h-3 w-16 bg-muted rounded" />
+                  <div className="h-5 w-20 bg-muted rounded" />
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-muted" />
+                  <div className="h-4 w-24 bg-muted rounded" />
+                </div>
+                <div className="h-4 w-20 bg-muted rounded" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 // =============================================================================
 // MAIN PAGE
 // =============================================================================
 
 export default function ICMemosPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<MemoStatus | "ALL">("ALL");
+  const [statusFilter, setStatusFilter] = React.useState<ICMemoStatus | "ALL">("ALL");
 
-  // Filter memos
+  const { memos, isLoading, error, stats: _stats, refetch } = useICMemos({
+    search: searchQuery || undefined,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
+  });
+
+  // Filter memos client-side for immediate feedback while typing
   const filteredMemos = React.useMemo(() => {
-    return sampleMemos.filter((memo) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        memo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        memo.companyName.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!searchQuery) return memos;
+    const query = searchQuery.toLowerCase();
+    return memos.filter(
+      (memo) =>
+        memo.title.toLowerCase().includes(query) ||
+        memo.company.name.toLowerCase().includes(query)
+    );
+  }, [memos, searchQuery]);
 
-      const matchesStatus = statusFilter === "ALL" || memo.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchQuery, statusFilter]);
-
-  // Calculate stats
-  const stats = React.useMemo(() => {
-    const pending = sampleMemos.filter((m) => m.status === "PENDING_VOTE").length;
-    const approved = sampleMemos.filter((m) => m.status === "APPROVED").length;
-    const totalInvestment = sampleMemos
+  // Calculate stats from fetched data
+  const calculatedStats = React.useMemo(() => {
+    const pending = memos.filter((m) =>
+      ["PENDING_VOTE", "SUBMITTED", "UNDER_REVIEW"].includes(m.status)
+    ).length;
+    const approved = memos.filter((m) => m.status === "APPROVED").length;
+    const totalInvestment = memos
       .filter((m) => m.status === "APPROVED")
-      .reduce((sum, m) => sum + m.investmentAmount, 0);
+      .reduce((sum, m) => {
+        const investment = m.mortisInvestment ? parseFloat(m.mortisInvestment) : 0;
+        return sum + investment;
+      }, 0);
 
     return { pending, approved, totalInvestment };
-  }, []);
+  }, [memos]);
 
   const statusCounts = React.useMemo(() => {
     return {
-      ALL: sampleMemos.length,
-      DRAFT: sampleMemos.filter((m) => m.status === "DRAFT").length,
-      PENDING_VOTE: sampleMemos.filter((m) => m.status === "PENDING_VOTE").length,
-      APPROVED: sampleMemos.filter((m) => m.status === "APPROVED").length,
-      REJECTED: sampleMemos.filter((m) => m.status === "REJECTED").length,
+      ALL: memos.length,
+      DRAFT: memos.filter((m) => m.status === "DRAFT").length,
+      SUBMITTED: memos.filter((m) => ["SUBMITTED", "UNDER_REVIEW"].includes(m.status)).length,
+      PENDING_VOTE: memos.filter((m) => m.status === "PENDING_VOTE").length,
+      APPROVED: memos.filter((m) => m.status === "APPROVED").length,
+      REJECTED: memos.filter((m) => m.status === "REJECTED").length,
     };
-  }, []);
+  }, [memos]);
 
   return (
     <DashboardLayout>
@@ -414,23 +452,36 @@ export default function ICMemosPage() {
           ]}
         />
 
+        {/* Error State */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-atlas-md text-red-400 flex items-center justify-between">
+            <span>Error loading IC memos: {error}</span>
+            <Button variant="ghost" size="sm" onClick={() => refetch()}>
+              <ReloadIcon className="size-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <StatCard
             title="Pending Votes"
-            value={stats.pending}
+            value={calculatedStats.pending}
             icon={<ClockIcon className="size-5" />}
+            isLoading={isLoading}
           />
           <StatCard
             title="Approved This Quarter"
-            value={stats.approved}
+            value={calculatedStats.approved}
             icon={<CheckCircledIcon className="size-5" />}
-            trend={{ direction: "up", value: "2 vs Q3" }}
+            isLoading={isLoading}
           />
           <StatCard
             title="Total Committed"
-            value={formatCurrency(stats.totalInvestment)}
+            value={formatCurrency(calculatedStats.totalInvestment)}
             icon={<FileTextIcon className="size-5" />}
+            isLoading={isLoading}
           />
         </div>
 
@@ -502,7 +553,9 @@ export default function ICMemosPage() {
         </div>
 
         {/* Memo List */}
-        {filteredMemos.length > 0 ? (
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : filteredMemos.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {filteredMemos.map((memo) => (
               <MemoCard key={memo.id} memo={memo} />

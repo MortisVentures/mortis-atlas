@@ -95,7 +95,7 @@ export default function DashboardPage() {
         toast.info("Report generation coming soon!");
         break;
       case "review-memos":
-        router.push("/memos");
+        router.push("/ic-memos");
         break;
       default:
         break;

@@ -1,6 +1,6 @@
 # Mortis Atlas - Project Context
 
-> **Last Updated:** 2026-02-06
+> **Last Updated:** 2026-02-08
 
 ## Overview
 
@@ -139,6 +139,66 @@ Dead buttons throughout the app - Log Activity, Schedule Meeting, Add Document b
 - `src/hooks/use-dashboard-stats.ts` - New hook
 - `src/app/dashboard/page.tsx` - Uses real stats
 - `src/components/dashboard/kpi-grid.tsx` - Added loading state
+
+## Completed: IC Memos Database Integration (Feb 8, 2026)
+
+### Overview
+Connected IC Memos to the database using the **Mortis Ventures IC Memo format** with structured queryable fields for investment outcome learning.
+
+### Schema Updates (Prisma)
+New enums added:
+- `ScoreRating` (STRONG, MODERATE, WEAK, ADEQUATE)
+- `ICMemoRecommendation` (INVEST, PASS, REVISIT)
+- `ICMemoDecision` (APPROVED, DECLINED, DEFERRED)
+
+ICMemo model extended with 30+ queryable fields:
+- **Thesis Alignment:** `focusArea`, `stage`
+- **Scores:** `tripleUseScore`, `wlcdiaScore`, `teamScore`, `marketScore`, `capitalEfficiencyScore`
+- **Founder Ratings:** `founderTechRating`, `founderBusinessRating`, `founderDesignRating` (1-5)
+- **Market Sizing:** `tam`, `sam`, `som`
+- **Capital Metrics:** `trlStage`, `monthlyBurn`, `runwayMonths`
+- **Financial Terms:** `askAmount`, `askValuation`, `preMoneyValuation`, `postMoneyValuation`, `roundSize`, `mortisInvestment`, `mortisOwnership`, `followOnReserve`
+- **Projections:** `projectedExitYears`, `targetExitLow`, `targetExitHigh`, `projectedMoicLow`, `projectedMoicHigh`
+- **Decision:** `memoRecommendation`, `decisionRationale`, `finalDecision`
+- **Content:** `content` (JSON) - narrative sections for Triple-Use, WLCDIA, Team GWC, Market, Risks, etc.
+
+### IC Memo Workflow
+```
+/ic-memos/new (Create) → /ic-memos (List) → /ic-memos/[id] (View + Vote)
+
+Statuses: DRAFT → SUBMITTED → UNDER_REVIEW → PENDING_VOTE → APPROVED/REJECTED
+```
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| `src/lib/validations/ic-memo.ts` | Zod schemas + UI config (FOCUS_AREA_OPTIONS, SCORE_RATING_CONFIG, etc.) |
+| `src/lib/db/ic-memos.ts` | CRUD helpers, voting, stats |
+| `src/app/api/ic-memos/route.ts` | GET list, POST create |
+| `src/app/api/ic-memos/[id]/route.ts` | GET, PUT, DELETE |
+| `src/app/api/ic-memos/[id]/submit/route.ts` | POST submit for IC review |
+| `src/app/api/ic-memos/[id]/votes/route.ts` | GET votes, POST cast vote, DELETE |
+| `src/hooks/use-ic-memos.ts` | `useICMemos`, `useICMemoDetail`, `useCreateICMemo` hooks |
+
+### Pages Updated
+- `/ic-memos` - List page with status filtering, real counts from API
+- `/ic-memos/new` - Complete rebuild with Mortis IC Memo format (multi-section form with sidebar nav)
+- `/ic-memos/[id]` - Detail page with all sections + live voting functionality
+- Both pages have "Back to Top" floating button for navigation
+
+### Dashboard Integration
+- Fixed "Review IC Memos" quick action to route to `/ic-memos` (was `/memos`)
+- Keyboard shortcut `⌘ I` navigates to IC Memos
+
+### Future: Insights Queries
+The structured schema enables outcome learning queries:
+```sql
+-- Average scores for APPROVED vs DECLINED deals
+SELECT finalDecision, AVG(founderTechRating), COUNT(*) FROM ICMemo GROUP BY finalDecision;
+
+-- Triple-Use score correlation with outcomes
+SELECT tripleUseScore, finalDecision, COUNT(*) FROM ICMemo GROUP BY tripleUseScore, finalDecision;
+```
 
 ## Build & Dev
 ```bash
