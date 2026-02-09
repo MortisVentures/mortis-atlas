@@ -213,12 +213,20 @@ export async function getCompanies(
 
 /**
  * Get a single company by ID with all relations
+ * NOTE: userId is required for authorization - ensures user can only access their own companies
  */
 export async function getCompanyById(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<CompanyWithRelations | null> {
-  const company = await prisma.company.findUnique({
-    where: { id },
+  // Build where clause with optional userId filter for authorization
+  const where: Prisma.CompanyWhereInput = { id };
+  if (userId) {
+    where.userId = userId;
+  }
+
+  const company = await prisma.company.findFirst({
+    where,
     include: {
       contacts: {
         select: {
@@ -239,6 +247,18 @@ export async function getCompanyById(
         },
         orderBy: { updatedAt: "desc" },
       },
+      referrerContact: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          company: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
           contacts: true,
@@ -254,10 +274,16 @@ export async function getCompanyById(
 
 /**
  * Get company with full details including activities
+ * NOTE: userId is required for authorization
  */
-export async function getCompanyWithFullDetails(id: string) {
-  return prisma.company.findUnique({
-    where: { id },
+export async function getCompanyWithFullDetails(id: string, userId?: string) {
+  const where: Prisma.CompanyWhereInput = { id };
+  if (userId) {
+    where.userId = userId;
+  }
+
+  return prisma.company.findFirst({
+    where,
     include: {
       contacts: {
         orderBy: { isPrimary: "desc" },

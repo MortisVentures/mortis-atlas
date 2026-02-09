@@ -27,6 +27,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: UserRole;
+    isActive?: boolean;
   }
 }
 
@@ -89,7 +90,8 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            allowDangerousEmailAccountLinking: true,
+            // Disabled for security - prevents account takeover via OAuth
+            allowDangerousEmailAccountLinking: false,
           }),
         ]
       : []),
@@ -118,10 +120,40 @@ export const authOptions: NextAuthOptions = {
         token.role = session.role;
       }
 
+      // Check if user is still active on each request (prevents zombie sessions)
+      // Only check on existing tokens, not during initial sign-in
+      if (token.id && !user) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { isActive: true, role: true },
+          });
+
+          if (!dbUser?.isActive) {
+            // Return empty object to invalidate the token
+            return { ...token, isActive: false };
+          }
+
+          // Sync role in case it changed (e.g., admin promoted/demoted user)
+          if (dbUser.role !== token.role) {
+            token.role = dbUser.role;
+          }
+        } catch {
+          // If DB check fails, allow the request to proceed
+          // (fail open to prevent lockouts during DB issues)
+        }
+      }
+
       return token;
     },
 
     async session({ session, token }) {
+      // Check if user was deactivated (token marked inactive)
+      if (token.isActive === false) {
+        // Return minimal session that will trigger re-auth
+        return { expires: new Date(0).toISOString() } as typeof session;
+      }
+
       // Add user id and role to session
       if (session.user) {
         session.user.id = token.id;

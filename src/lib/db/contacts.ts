@@ -74,12 +74,19 @@ export interface ContactFullDetails extends Contact {
 
 /**
  * Get a single contact by ID with basic relations
+ * NOTE: userId is optional but should be provided for authorization
  */
 export async function getContactById(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<ContactWithRelations | null> {
-  const contact = await prisma.contact.findUnique({
-    where: { id },
+  const where: Prisma.ContactWhereInput = { id };
+  if (userId) {
+    where.userId = userId;
+  }
+
+  const contact = await prisma.contact.findFirst({
+    where,
     include: {
       company: {
         select: {
@@ -129,12 +136,19 @@ export async function getContactById(
 
 /**
  * Get contact with full details including all activities
+ * NOTE: userId is optional but should be provided for authorization
  */
 export async function getContactWithFullDetails(
-  id: string
+  id: string,
+  userId?: string
 ): Promise<ContactFullDetails | null> {
-  const contact = await prisma.contact.findUnique({
-    where: { id },
+  const where: Prisma.ContactWhereInput = { id };
+  if (userId) {
+    where.userId = userId;
+  }
+
+  const contact = await prisma.contact.findFirst({
+    where,
     include: {
       company: {
         select: {

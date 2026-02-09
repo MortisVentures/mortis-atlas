@@ -18,6 +18,11 @@ model User {
   lastLoginAt         DateTime?
   password            String?
   role                UserRole            @default(ANALYST)
+  // Two-Factor Authentication
+  twoFactorEnabled    Boolean             @default(false)
+  twoFactorSecret     String?             // Encrypted TOTP secret
+  twoFactorVerifiedAt DateTime?           // When 2FA was verified/enabled
+  backupCodes         String[]            // Encrypted backup codes for recovery
   accounts            Account[]
   activities          Activity[]
   auditLogs           AuditLog[]

@@ -1,6 +1,6 @@
 # Mortis Atlas - Project Context
 
-> **Last Updated:** 2026-02-08
+> **Last Updated:** 2026-02-09
 
 ## Overview
 
@@ -199,6 +199,158 @@ SELECT finalDecision, AVG(founderTechRating), COUNT(*) FROM ICMemo GROUP BY fina
 -- Triple-Use score correlation with outcomes
 SELECT tripleUseScore, finalDecision, COUNT(*) FROM ICMemo GROUP BY tripleUseScore, finalDecision;
 ```
+
+## Completed: Security Hardening (Phases 0-2) (Feb 9, 2026)
+
+### Overview
+Production security hardening implementing defense-in-depth for authentication, authorization, and audit capabilities.
+
+### Security Headers (`next.config.mjs`)
+- **HSTS** - Strict-Transport-Security with 1-year max-age
+- **CSP** - Content-Security-Policy with strict source policies
+- **X-Frame-Options** - DENY to prevent clickjacking
+- **X-Content-Type-Options** - nosniff to prevent MIME-type attacks
+- **Referrer-Policy** - strict-origin-when-cross-origin
+- **Permissions-Policy** - Restrictive camera/microphone/geolocation policies
+
+### Rate Limiting (`src/lib/security/rate-limit.ts`)
+In-memory rate limiter with sliding window:
+- **Auth endpoints:** 5 requests/minute (login, 2FA)
+- **API endpoints:** 100 requests/minute (general)
+- Applied via middleware at `/api/auth/*` and `/api/*`
+
+### Two-Factor Authentication (`src/lib/auth/totp.ts`)
+TOTP-based 2FA infrastructure:
+- **Setup:** `/api/auth/2fa/setup` - Generate secret + QR code
+- **Verify:** `/api/auth/2fa/verify` - Validate TOTP code
+- **Disable:** `/api/auth/2fa/disable` - Remove 2FA (requires code verification)
+- **UI:** `/settings/security` - 2FA management interface
+
+User model extended with:
+- `twoFactorEnabled: Boolean`
+- `twoFactorSecret: String?` (encrypted)
+- `twoFactorBackupCodes: String[]`
+
+### Audit Logging (`src/lib/audit/logger.ts`)
+Enhanced audit trail for security-relevant events:
+- Login/logout events
+- 2FA setup/disable
+- Password changes
+- Role changes
+- Failed auth attempts
+
+### Password Policy (`src/lib/validations/auth.ts`)
+Strong password requirements:
+- Minimum 12 characters
+- Mixed case (uppercase + lowercase)
+- At least one number
+- At least one special character
+- Zod schema for validation
+
+### Role-Based Access Control
+
+**User Roles:** `ADMIN`, `USER`, `LP`
+
+**Role Routing:**
+- `LP` users → `/lp/dashboard` (restricted sidebar, LP-specific navigation)
+- `ADMIN` users → Full access + `/admin/*` routes
+- `USER` → Standard CRM access
+
+### New Routes
+
+#### LP Portal (`/lp/*`)
+| Route | Purpose |
+|-------|---------|
+| `/lp/dashboard` | LP-specific dashboard |
+| `/lp/reports` | Quarterly reports viewer |
+| `/lp/documents` | Shared documents access |
+| `/lp/capital-calls` | Capital call history |
+
+LP users see restricted sidebar with only LP-relevant navigation.
+
+#### Admin Panel (`/admin/*`)
+| Route | Purpose |
+|-------|---------|
+| `/admin/users` | User management (create, edit, deactivate) |
+| `/admin/audit` | Audit log viewer |
+| `/admin/settings` | System settings |
+
+#### Settings (`/settings/*`)
+| Route | Purpose |
+|-------|---------|
+| `/settings/security` | 2FA setup/management |
+| `/settings/profile` | Profile settings |
+
+### Auth Hardening (`src/lib/auth/config.ts`)
+- **OAuth Account Linking:** Disabled to prevent account takeover
+- **Session Invalidation:** Sessions invalidated when user deactivated
+- **Secure Callbacks:** Enhanced JWT/session callbacks
+
+### Authorization Fixes
+- `src/lib/db/companies.ts` - Added `userId` filter to queries
+- `src/lib/db/contacts.ts` - Added `userId` filter to queries
+- Ensures users can only access their own data
+
+### Files Created
+| File | Purpose |
+|------|---------|
+| `src/lib/security/rate-limit.ts` | In-memory rate limiting |
+| `src/lib/auth/totp.ts` | TOTP generation/verification |
+| `src/lib/audit/logger.ts` | Enhanced audit logging |
+| `src/lib/validations/auth.ts` | Password policy validation |
+| `src/app/api/auth/2fa/setup/route.ts` | 2FA setup endpoint |
+| `src/app/api/auth/2fa/verify/route.ts` | 2FA verification endpoint |
+| `src/app/api/auth/2fa/disable/route.ts` | 2FA disable endpoint |
+| `src/app/api/admin/users/route.ts` | User management API |
+| `src/app/lp/*` | LP Portal pages |
+| `src/app/admin/*` | Admin Panel pages |
+| `src/app/settings/*` | Settings pages |
+| `scripts/create-lp-user.ts` | Test LP user creation |
+
+### Test Accounts
+Create LP test user via:
+```bash
+pnpm tsx scripts/create-lp-user.ts
+```
+
+---
+
+## Product Vision: Insights Engine (Next Priority)
+
+### Goal
+Solo GP decision intelligence system - a "brain dump" repository that tracks KPIs, draws connections, and surfaces patterns for deal wins/losses based on structured IC Memo data.
+
+### Phase 3: Insights & Analytics (Up Next)
+
+| Feature | Purpose |
+|---------|---------|
+| Deal Flow Analytics | Source effectiveness, conversion rates, time-in-stage metrics |
+| Outcome Learning Dashboard | Win/loss patterns correlated to founder ratings, scores, market sizing |
+| Trend Tracking | Deal volume over time, sector shifts, valuation trends |
+| Recommendation Signals | Surface deals similar to past wins, flag loss patterns |
+
+### Phase 4: External Integrations (Future)
+- **Email Integration** → Auto-capture deal touchpoints
+- **Calendar Integration** → Meeting context enrichment
+- These feed more data into the insights engine
+
+### Example Insights Queries
+```sql
+-- Founder ratings correlation with outcomes
+SELECT finalDecision, AVG(founderTechRating), AVG(founderBusinessRating)
+FROM ICMemo GROUP BY finalDecision;
+
+-- Source effectiveness by conversion rate
+SELECT source, COUNT(*) as deals,
+  SUM(CASE WHEN stage = 'CLOSED_WON' THEN 1 ELSE 0 END) as wins
+FROM Deal GROUP BY source ORDER BY wins DESC;
+
+-- Time-to-close by sector
+SELECT sector, AVG(DATEDIFF(closedAt, createdAt)) as avg_days
+FROM Deal WHERE stage = 'CLOSED_WON' GROUP BY sector;
+```
+
+---
 
 ## Build & Dev
 ```bash
