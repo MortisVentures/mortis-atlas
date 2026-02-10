@@ -52,6 +52,7 @@ Mortis Atlas is a VC fund CRM and portfolio management platform built with Next.
 
 ### Pages
 - Dashboard: `/dashboard`
+- Insights: `/insights` (tabbed: Overview, Deal Flow, Outcomes, Trends)
 - Companies: `/companies`, `/companies/[id]`, `/companies/[id]/edit`, `/companies/new`
 - Contacts: `/contacts`, `/contacts/[id]`, `/contacts/[id]/edit`, `/contacts/new`
 - Deals: `/deals`, `/deals/[id]`, `/deals/[id]/edit`, `/deals/new`, `/deals/sources`, `/deals/portfolio`
@@ -315,40 +316,120 @@ pnpm tsx scripts/create-lp-user.ts
 
 ---
 
-## Product Vision: Insights Engine (Next Priority)
+## Completed: Insights Engine (Feb 9, 2026)
 
-### Goal
-Solo GP decision intelligence system - a "brain dump" repository that tracks KPIs, draws connections, and surfaces patterns for deal wins/losses based on structured IC Memo data.
+### Overview
+Solo GP decision intelligence system that tracks KPIs, surfaces patterns from IC Memo data, and correlates deal outcomes with founder ratings, scores, and market sizing.
 
-### Phase 3: Insights & Analytics (Up Next)
+### Route
+Single `/insights` page with 4 tabbed sections:
+1. **Overview** - Key KPIs with confidence indicators, top signals, recommendations
+2. **Deal Flow** - Source effectiveness, time-in-stage bottlenecks, deal velocity
+3. **Outcome Learning** - IC Memo correlations (founder ratings, scores vs decisions)
+4. **Trends** - Deal volume over time, sector distribution, source shifts
 
-| Feature | Purpose |
-|---------|---------|
-| Deal Flow Analytics | Source effectiveness, conversion rates, time-in-stage metrics |
-| Outcome Learning Dashboard | Win/loss patterns correlated to founder ratings, scores, market sizing |
-| Trend Tracking | Deal volume over time, sector shifts, valuation trends |
-| Recommendation Signals | Surface deals similar to past wins, flag loss patterns |
+### Sparse Data Handling
+The engine handles early-stage funds with limited data gracefully:
+- Confidence badges (low/medium/high) on all metrics
+- Thresholds: 5+ for patterns, 10+ for medium confidence, 20+ for high confidence
+- `SparseDataNotice` component with actionable prompts to add more data
 
-### Phase 4: External Integrations (Future)
+### Files Created
+
+#### Core Infrastructure
+| File | Purpose |
+|------|---------|
+| `src/lib/insights/types.ts` | TypeScript interfaces for all insights data |
+| `src/lib/insights/thresholds.ts` | Confidence levels, data thresholds, formatting utilities |
+| `src/lib/insights/index.ts` | Barrel export |
+| `src/lib/db/insights.ts` | Prisma queries for analytics aggregations |
+
+#### API
+| File | Purpose |
+|------|---------|
+| `src/app/api/insights/route.ts` | GET with `?section=` param (overview, deal-flow, outcomes, trends, all) |
+
+#### Hook
+| File | Purpose |
+|------|---------|
+| `src/hooks/use-insights.ts` | `useInsights()` hook with section-specific variants |
+
+#### Page & Components
+| File | Purpose |
+|------|---------|
+| `src/app/insights/page.tsx` | Server component with auth |
+| `src/app/insights/insights-dashboard.tsx` | Client component with tab navigation |
+| `src/components/insights/index.ts` | Barrel export |
+| `src/components/insights/insight-kpi-grid.tsx` | KPI cards with confidence indicators |
+| `src/components/insights/source-effectiveness-chart.tsx` | Source conversion visualization |
+| `src/components/insights/time-in-stage-chart.tsx` | Stage bottleneck detection |
+| `src/components/insights/deal-velocity-chart.tsx` | Monthly deal flow tracking |
+| `src/components/insights/founder-rating-matrix.tsx` | Founder ratings heatmap |
+| `src/components/insights/score-correlation-chart.tsx` | Score vs outcome visualization |
+| `src/components/insights/pattern-card.tsx` | Pattern/signal display |
+| `src/components/insights/deal-volume-trend.tsx` | Volume trend over time |
+| `src/components/insights/sector-distribution-chart.tsx` | Sector distribution donut/bar |
+| `src/components/insights/sparse-data-notice.tsx` | Empty/sparse data states |
+
+### Navigation
+- Added to sidebar under Dashboard
+- Added to command palette with keywords (insights, analytics, patterns, outcomes)
+
+### Key Features
+
+#### Overview Tab
+- 6 KPIs: Total Deals, Conversion Rate, Avg Time to Close, Pipeline Value, Portfolio Value, Active Deals
+- Auto-generated insights: Best performing source, stage bottlenecks, sector concentration
+- Confidence badges on all metrics
+
+#### Deal Flow Tab
+- Source effectiveness table with conversion rates, avg time, total invested
+- Time-in-stage chart with bottleneck detection (highlights stages exceeding thresholds)
+- Deal velocity chart (new vs closed over last 6 months)
+- Funnel conversion visualization
+
+#### Outcome Learning Tab
+- Founder rating matrix: Tech/Business/Design ratings (1-5) vs approval rate
+- Score effectiveness: Strong vs Weak score approval rates for all 5 scores
+- Auto-identified patterns (e.g., "Strong founder ratings correlate with approvals")
+- Best predictor identification
+
+#### Trends Tab
+- Deal volume trend (last 12 months)
+- Sector distribution with donut + bar charts
+- Source shifts (last 3 months vs previous 3 months)
+
+### Example Queries (in `src/lib/db/insights.ts`)
+```typescript
+// Founder rating correlations
+prisma.iCMemo.groupBy({
+  by: ['founderTechRating', 'finalDecision'],
+  where: { authorId: userId, finalDecision: { not: null } },
+  _count: { id: true },
+});
+
+// Source effectiveness
+prisma.deal.findMany({
+  where: { userId },
+  select: { sourceType: true, stage: true, amount: true, createdAt: true, actualClose: true },
+});
+
+// Deal velocity by month
+prisma.deal.groupBy({
+  by: ['createdAt'],
+  where: { userId, createdAt: { gte: sixMonthsAgo } },
+  _count: { id: true },
+});
+```
+
+---
+
+## Product Vision: External Integrations (Next Priority)
+
+### Phase 4: External Integrations
 - **Email Integration** → Auto-capture deal touchpoints
 - **Calendar Integration** → Meeting context enrichment
 - These feed more data into the insights engine
-
-### Example Insights Queries
-```sql
--- Founder ratings correlation with outcomes
-SELECT finalDecision, AVG(founderTechRating), AVG(founderBusinessRating)
-FROM ICMemo GROUP BY finalDecision;
-
--- Source effectiveness by conversion rate
-SELECT source, COUNT(*) as deals,
-  SUM(CASE WHEN stage = 'CLOSED_WON' THEN 1 ELSE 0 END) as wins
-FROM Deal GROUP BY source ORDER BY wins DESC;
-
--- Time-to-close by sector
-SELECT sector, AVG(DATEDIFF(closedAt, createdAt)) as avg_days
-FROM Deal WHERE stage = 'CLOSED_WON' GROUP BY sector;
-```
 
 ---
 

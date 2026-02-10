@@ -11,6 +11,7 @@ interface SettingsLayoutProps {
 const settingsNav = [
   { href: "/settings", label: "General" },
   { href: "/settings/security", label: "Security" },
+  { href: "/settings/integrations", label: "Integrations" },
 ];
 
 export default async function SettingsLayout({ children }: SettingsLayoutProps) {

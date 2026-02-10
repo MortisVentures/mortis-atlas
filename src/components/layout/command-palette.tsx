@@ -13,6 +13,8 @@ import {
   MagnifyingGlassIcon,
   ClockIcon,
   GlobeIcon,
+  LightningBoltIcon,
+  EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 
@@ -59,6 +61,8 @@ const sampleDeals: SearchResult[] = [];
 
 const navigationPages: SearchResult[] = [
   { id: "nav-dashboard", type: "page", title: "Dashboard", subtitle: "Overview and KPIs", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
+  { id: "nav-inbox", type: "page", title: "Inbox", subtitle: "Email contacts and proposals", href: "/inbox", icon: <EnvelopeClosedIcon className="size-4" />, keywords: ["email", "proposals", "contacts", "suggestions"] },
+  { id: "nav-insights", type: "page", title: "Insights", subtitle: "Decision intelligence and analytics", href: "/insights", icon: <LightningBoltIcon className="size-4" />, keywords: ["analytics", "patterns", "outcomes"] },
   { id: "nav-companies", type: "page", title: "Companies", subtitle: "Pipeline companies", href: "/companies", icon: <GlobeIcon className="size-4" /> },
   { id: "nav-contacts", type: "page", title: "Contacts", subtitle: "Network contacts", href: "/contacts", icon: <PersonIcon className="size-4" /> },
   { id: "nav-deals", type: "page", title: "Deals", subtitle: "Active deals", href: "/deals", icon: <RocketIcon className="size-4" /> },

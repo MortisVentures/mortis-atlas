@@ -18,6 +18,7 @@ import {
   MixerHorizontalIcon,
   FileTextIcon,
   StarFilledIcon,
+  EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,8 @@ const navigationSections: NavSection[] = [
   {
     items: [
       { label: "Dashboard", href: "/dashboard", icon: <HomeIcon className="size-5" /> },
+      { label: "Inbox", href: "/inbox", icon: <EnvelopeClosedIcon className="size-5" /> },
+      { label: "Insights", href: "/insights", icon: <MixerHorizontalIcon className="size-5" /> },
     ],
   },
   {
