@@ -1,6 +1,6 @@
 # Mortis Atlas - Project Context
 
-> **Last Updated:** 2026-02-09
+> **Last Updated:** 2026-02-10
 
 ## Overview
 
@@ -29,6 +29,8 @@ Mortis Atlas is a VC fund CRM and portfolio management platform built with Next.
 - `Deal` - with `DealStage` (8 stages: INITIAL_REVIEW → CLOSED_WON/CLOSED_LOST) and `DealSource` (9 types: REFERRAL, DIRECT_OUTREACH, INBOUND, CONFERENCE, ACCELERATOR, NETWORK, PORTFOLIO, INVESTOR_NETWORK, OTHER)
 - `Company`, `Contact`, `Activity`, `Document`, `ICMemo`, `DealTeamMember`
 - `Contact.referredDeals` via `@relation("DealReferrer")` — referral metrics auto-calculated
+- **Email Integration:** `EmailAccount`, `EmailThread`, `EmailMessage`, `UnknownSender`, `CalendarEvent`
+- `EmailProvider` enum (GMAIL, OFFICE365), `UnknownSenderStatus` enum (PENDING, CREATED_CONTACT, etc.)
 
 ### Hooks
 - Located at `src/hooks/`
@@ -53,6 +55,7 @@ Mortis Atlas is a VC fund CRM and portfolio management platform built with Next.
 ### Pages
 - Dashboard: `/dashboard`
 - Insights: `/insights` (tabbed: Overview, Deal Flow, Outcomes, Trends)
+- Inbox: `/inbox` (email proposals, unknown sender detection)
 - Companies: `/companies`, `/companies/[id]`, `/companies/[id]/edit`, `/companies/new`
 - Contacts: `/contacts`, `/contacts/[id]`, `/contacts/[id]/edit`, `/contacts/new`
 - Deals: `/deals`, `/deals/[id]`, `/deals/[id]/edit`, `/deals/new`, `/deals/sources`, `/deals/portfolio`
@@ -61,6 +64,7 @@ Mortis Atlas is a VC fund CRM and portfolio management platform built with Next.
 - Reports: `/reports/lp-quarterly`
 - Tasks: `/tasks`
 - Portfolio: `/portfolio`
+- Settings: `/settings/integrations` (email account management), `/settings/security` (2FA)
 
 ## Database Configuration
 - DB helper functions in `src/lib/db/deals.ts` (CRUD, referrer metrics, source stats, stage/source/priority configs)
@@ -424,12 +428,112 @@ prisma.deal.groupBy({
 
 ---
 
-## Product Vision: External Integrations (Next Priority)
+## Completed: Email Integration with Smart Contact Proposals (Feb 10, 2026)
 
-### Phase 4: External Integrations
-- **Email Integration** → Auto-capture deal touchpoints
-- **Calendar Integration** → Meeting context enrichment
-- These feed more data into the insights engine
+### Overview
+Gmail OAuth integration with intelligent unknown sender detection. Syncs email threads, detects unknown senders, scores them by priority, and surfaces batched contact proposals for review.
+
+### Core Flow
+```
+Email Sync → Detect Unknown Sender → Score & Prioritize → Batch Proposals → User Reviews
+```
+
+### Gmail OAuth (`src/lib/integrations/email/gmail-client.ts`)
+- OAuth 2.0 flow with PKCE
+- Token encryption with AES-256-GCM (`src/lib/security/encryption.ts`)
+- Scopes: `gmail.readonly`, `gmail.metadata`
+- Auto token refresh on expiry
+
+### Email Sync (`src/lib/integrations/email/sync.ts`)
+- Initial sync: Last 90 days of email threads
+- Incremental sync: Uses Gmail `historyId` cursor
+- Stores thread metadata + message headers (not full body)
+- Detects unknown senders on each sync
+
+### Detection Engine (`src/lib/integrations/detection/`)
+
+| File | Purpose |
+|------|---------|
+| `unknown-sender-detector.ts` | Identifies senders not in contacts DB |
+| `scoring.ts` | Priority scoring (engagement, recency, VIP domains, deal keywords) |
+| `signature-parser.ts` | Extracts name, title, phone, LinkedIn from email signatures |
+| `company-matcher.ts` | Matches sender domains to existing companies |
+
+**Scoring Algorithm:**
+- Message count: +5/msg (max 25)
+- Thread count: +10/thread (max 30)
+- Last 7 days: +15
+- First seen < 7 days: +10
+- Multi-thread engagement: +10
+- Deal keywords (investment, term sheet, etc.): +20
+- VIP domains (known investors/portfolio): +50
+
+### Proposal UI (`/inbox`)
+- Batched proposals list with score badges
+- Quick create (uses parsed signature data)
+- Full modal for editing/company linking
+- Dismiss with reason tracking
+- Company matching: link to existing or create new
+
+### API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/integrations/email/connect` | GET | Start Gmail OAuth |
+| `/api/integrations/email/callback` | GET | OAuth callback |
+| `/api/integrations/email/accounts` | GET/DELETE | List/remove accounts |
+| `/api/integrations/email/sync` | POST | Trigger email sync |
+| `/api/proposals` | GET | Pending proposals |
+| `/api/proposals/[id]/create` | POST | Create contact from proposal |
+| `/api/proposals/[id]/dismiss` | POST | Dismiss proposal |
+| `/api/inbox/threads` | GET | Email threads list |
+
+### Files Created
+
+#### Core Infrastructure
+| File | Purpose |
+|------|---------|
+| `src/lib/security/encryption.ts` | AES-256-GCM for OAuth tokens |
+| `src/lib/integrations/email/types.ts` | TypeScript interfaces |
+| `src/lib/integrations/email/gmail-client.ts` | Gmail API client |
+| `src/lib/integrations/email/sync.ts` | Email sync service |
+
+#### Detection
+| File | Purpose |
+|------|---------|
+| `src/lib/integrations/detection/unknown-sender-detector.ts` | Sender detection |
+| `src/lib/integrations/detection/scoring.ts` | Priority scoring |
+| `src/lib/integrations/detection/signature-parser.ts` | Signature extraction |
+| `src/lib/integrations/detection/company-matcher.ts` | Domain matching |
+
+#### UI
+| File | Purpose |
+|------|---------|
+| `src/app/inbox/page.tsx` | Inbox page (server) |
+| `src/app/inbox/inbox-dashboard.tsx` | Inbox dashboard (client) |
+| `src/app/settings/integrations/page.tsx` | Account management |
+| `src/components/email/proposals-list.tsx` | Proposals list |
+| `src/components/email/contact-proposal-modal.tsx` | Create contact modal |
+| `src/components/ui/tabs.tsx` | Radix Tabs component |
+| `src/components/ui/radio-group.tsx` | Radix RadioGroup component |
+
+#### Hooks
+| File | Purpose |
+|------|---------|
+| `src/hooks/use-email-accounts.ts` | Email account management |
+| `src/hooks/use-proposals.ts` | Proposals CRUD |
+
+### Environment Variables
+```bash
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+ENCRYPTION_KEY="..."  # 32-byte base64 for AES-256
+```
+
+### Future: Office 365 + Calendar
+- Microsoft Graph OAuth (scaffolded but marked "Coming Soon")
+- Calendar sync for meeting detection
+- Auto-link meetings to deals/companies
 
 ---
 
