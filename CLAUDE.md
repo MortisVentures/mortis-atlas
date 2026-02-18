@@ -1,6 +1,6 @@
 # Mortis Atlas - Project Context
 
-> **Last Updated:** 2026-02-10
+> **Last Updated:** 2026-02-17
 
 ## Overview
 
@@ -534,6 +534,233 @@ ENCRYPTION_KEY="..."  # 32-byte base64 for AES-256
 - Microsoft Graph OAuth (scaffolded but marked "Coming Soon")
 - Calendar sync for meeting detection
 - Auto-link meetings to deals/companies
+
+---
+
+## Completed: Google Calendar Integration (Feb 10, 2026)
+
+### Overview
+"Top 1%" Google Calendar integration with Meeting Prep Intelligence, Relationship Heat Tracking, Auto-Linking, Meeting Stage Detection, and full Insights Engine Integration.
+
+### Core Value Proposition
+| Feature | What It Does |
+|---------|--------------|
+| **Meeting Prep Intelligence** | Auto-generates contextual briefs before meetings |
+| **Relationship Heat Tracking** | Scores and trends engagement by company/contact |
+| **Auto-Linking** | Matches attendees to contacts/companies/deals |
+| **Meeting Stage Detection** | Detects pitch vs diligence vs partner review |
+| **Insights Integration** | Meeting cadence correlations with outcomes |
+
+### Schema Updates (Prisma)
+New enums:
+- `CalendarProvider` (GOOGLE, OFFICE365)
+- `MeetingType` (INITIAL_PITCH, DUE_DILIGENCE, PARTNER_MEETING, BOARD_MEETING, FOLLOW_UP, NETWORKING, PORTFOLIO_CHECK_IN, INVESTOR_UPDATE, OTHER)
+- `RelationshipHeat` (HOT, WARM, COOLING, COLD)
+
+New models:
+- `CalendarAccount` - OAuth tokens (encrypted), sync cursor, calendar settings
+- `CalendarEvent` - Extended with detectedType, typeConfidence, auto-linking fields
+- `CalendarAttendee` - Per-attendee with contact/company links
+- `MeetingPrepBrief` - Generated prep context for meetings
+- `RelationshipMetrics` - Heat scores, trend tracking per company/contact
+
+### Key Algorithms
+
+**Relationship Heat Scoring (0-100):**
+```
+Recency (max 40 pts):    Last 7d=40, 14d=35, 30d=25, 60d=15, 90d=5
+Frequency (max 35 pts):  4+/mo=35, 2+/mo=28, 1+/mo=20, 0.5+/mo=12
+Trend (max 25 pts):      Rising=25, Slight rise=20, Stable=15, Declining=0
+
+Heat Levels: HOT (≥70), WARM (≥40), COOLING (≥15), COLD (<15)
+```
+
+**Meeting Type Detection:**
+- Keyword scoring on title, description, attendees
+- Pattern matching: "pitch", "due diligence", "partner meeting", etc.
+- Attendee analysis: internal-only vs external present
+- Returns type + confidence score
+
+### API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/calendar/connect` | GET | Generate Google OAuth URL |
+| `/api/calendar/callback` | GET | OAuth callback, store tokens |
+| `/api/calendar/accounts` | GET/DELETE | List/remove connected accounts |
+| `/api/calendar/sync` | POST | Trigger calendar sync |
+| `/api/calendar` | GET | List events with filters |
+| `/api/calendar/[id]` | GET/PUT | Single event operations |
+| `/api/calendar/prep/[eventId]` | GET | Get meeting prep brief |
+| `/api/calendar/insights` | GET | Calendar analytics |
+
+### Files Created
+
+#### Core Infrastructure (`src/lib/integrations/calendar/`)
+| File | Purpose |
+|------|---------|
+| `types.ts` | TypeScript interfaces, constants, heat config |
+| `google-calendar-client.ts` | OAuth flow, API client |
+| `sync.ts` | CalendarSyncService, event upsert |
+| `attendee-matcher.ts` | Email/domain matching to contacts/companies |
+| `meeting-type-detector.ts` | Stage detection engine |
+| `meeting-prep.ts` | Prep brief generation |
+| `relationship-tracker.ts` | Heat score calculation |
+| `index.ts` | Barrel export |
+
+#### Database (`src/lib/db/`)
+| File | Purpose |
+|------|---------|
+| `calendar.ts` | Calendar CRUD operations |
+| `relationship-metrics.ts` | Metrics queries, heat distribution |
+
+#### Hooks (`src/hooks/`)
+| File | Purpose |
+|------|---------|
+| `use-calendar-accounts.ts` | Account management |
+| `use-calendar.ts` | Event fetching, useUpcomingMeetings |
+| `use-meeting-prep.ts` | Prep brief fetching |
+| `use-relationship-heat.ts` | Relationship metrics |
+
+#### Components (`src/components/calendar/`)
+| File | Purpose |
+|------|---------|
+| `meeting-type-badge.tsx` | MeetingTypeBadge, MeetingTypeSelector |
+| `calendar-link-dialog.tsx` | Manual event linking |
+| `meeting-prep-panel.tsx` | Full prep brief display |
+| `upcoming-meetings.tsx` | UpcomingMeetings, MeetingCard |
+| `relationship-heat-badge.tsx` | Heat badges and indicators |
+| `index.ts` | Barrel export |
+
+#### Insights Components (`src/components/insights/`)
+| File | Purpose |
+|------|---------|
+| `relationship-heat-grid.tsx` | Heat grid + distribution chart |
+| `meeting-velocity-chart.tsx` | Meeting velocity charts |
+| `calendar-insights-tab.tsx` | Full calendar insights tab |
+
+### Meeting Prep Brief Contents
+- **dealContext**: Stage, amount, team, recent activities, next milestone
+- **companyContext**: Sector, valuation, funding round, previous meetings count
+- **attendeeProfiles**: Name, role, company, interaction history
+- **relationshipSignals**: Engagement trends, heat status
+- **suggestedTalkingPoints**: Based on deal stage and meeting type
+- **openQuestions**: Extracted from previous activity notes
+
+### Insights Tab (in `/insights`)
+New "Calendar" tab with:
+- KPI cards: Meetings (30d/90d), Avg per Week, Upcoming
+- Relationship heat distribution chart
+- Hot relationships grid + Needs Attention grid
+- Meeting trend chart (6 months)
+- Meetings by deal stage chart
+- Meeting patterns & outcomes (avg meetings for won vs lost deals)
+
+### Environment Variables
+```bash
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+ENCRYPTION_KEY="..."  # 32-byte base64 for AES-256 (shared with email)
+```
+
+### Settings Integration
+- Google Calendar card on `/settings/integrations` with connect/disconnect
+- Shows connected accounts with sync status
+- Manual sync trigger button
+
+---
+
+## Completed: Layout Standardization (Feb 17, 2026)
+
+### Overview
+Comprehensive layout system audit and standardization. Implemented configurable max-width with `fullWidth` option, eliminated redundant nested layouts, and ensured consistent page structure across all routes.
+
+### Layout System (`src/components/layout/dashboard-layout.tsx`)
+
+**Key Changes:**
+- Added `CONTENT_MAX_WIDTH = 1400` constant for readable content width
+- Added `fullWidth` prop to `DashboardLayout` and `MainContent` components
+- Content centers with `mx-auto` when not fullWidth
+- Exported `CONTENT_MAX_WIDTH` from layout index
+
+```typescript
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  defaultSidebarCollapsed?: boolean;
+  className?: string;
+  fullWidth?: boolean;  // New: bypasses max-width constraint
+}
+```
+
+### Layout Pattern
+
+**Standard pages** use layout.tsx + page.tsx pattern:
+```
+layout.tsx → DashboardLayout + DashboardContent wrapper
+page.tsx   → Fragment (<>) + PageHeader + content
+```
+
+**Full-width pages** (kanban, data-heavy views):
+```typescript
+// layout.tsx
+<DashboardLayout fullWidth>
+  <DashboardContent>{children}</DashboardContent>
+</DashboardLayout>
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `src/components/layout/dashboard-layout.tsx` | Added fullWidth prop, CONTENT_MAX_WIDTH |
+| `src/components/layout/index.ts` | Export CONTENT_MAX_WIDTH |
+| `src/app/deals/layout.tsx` | Added fullWidth prop |
+| `src/app/deals/page.tsx` | Removed redundant DashboardLayout wrapper |
+| `src/app/deals/[id]/page.tsx` | Removed redundant wrapper |
+| `src/app/deals/[id]/edit/page.tsx` | Removed redundant wrapper |
+| `src/app/deals/new/page.tsx` | Removed redundant wrapper |
+| `src/app/deals/portfolio/page.tsx` | Removed redundant wrapper |
+| `src/app/companies/page.tsx` | Simplified to `space-y-6` |
+| `src/app/companies/new/page.tsx` | Changed to `max-w-4xl mx-auto` |
+| `src/app/companies/[id]/edit/page.tsx` | Changed to `max-w-4xl mx-auto` |
+| `src/app/contacts/page.tsx` | Simplified to `space-y-6` |
+| `src/app/contacts/new/page.tsx` | Changed to `max-w-4xl mx-auto` |
+| `src/app/contacts/[id]/edit/page.tsx` | Changed to `max-w-4xl mx-auto` |
+| `src/app/ic-memos/page.tsx` | Removed redundant wrapper |
+| `src/app/ic-memos/new/page.tsx` | Removed redundant wrapper |
+| `src/app/ic-memos/[id]/page.tsx` | Removed redundant wrapper |
+| `src/app/tasks/page.tsx` | Converted to standard pattern |
+
+### Files Created
+
+| File | Purpose |
+|------|--------|
+| `src/app/ic-memos/layout.tsx` | IC Memos layout wrapper |
+| `src/app/tasks/layout.tsx` | Tasks layout wrapper |
+
+### Layout Hierarchy
+
+```
+/deals/*           → fullWidth (kanban board)
+/companies/*       → standard (1400px max)
+/contacts/*        → standard (1400px max)
+/documents/*       → standard (1400px max)
+/ic-memos/*        → standard (1400px max)
+/tasks             → standard (1400px max)
+/insights          → standard (1400px max)
+/inbox             → standard (1400px max)
+/settings/*        → max-w-4xl (narrower for forms)
+/admin/*           → custom sidebar layout
+/lp/*              → custom LP portal layout
+```
+
+### Modal Components (Verified)
+All modals use proper centering patterns:
+- `ActivityModal` - 550px fixed positioning
+- `AddCompanyModal` - Dialog 500px max
+- `TaskModal` - Framer Motion 600px
+- `ContactProposalModal` - Dialog 550px max
+- `DocumentUploadModal` - Dialog centered
 
 ---
 

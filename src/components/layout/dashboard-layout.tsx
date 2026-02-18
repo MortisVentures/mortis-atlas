@@ -13,7 +13,9 @@ import {
 // CONSTANTS
 // =============================================================================
 
-const CONTENT_MAX_WIDTH = 1920;
+/** Default max-width for readable content (can be overridden with fullWidth prop) */
+const CONTENT_MAX_WIDTH = 1400;
+
 const CONTENT_PADDING = {
   mobile: 16,
   tablet: 24,
@@ -102,9 +104,11 @@ function _SidebarProvider({ children, defaultCollapsed }: _SidebarProviderProps)
 interface MainContentProps {
   children: React.ReactNode;
   className?: string;
+  /** If true, content will use full available width instead of max-width constraint */
+  fullWidth?: boolean;
 }
 
-function MainContent({ children, className }: MainContentProps) {
+function MainContent({ children, className, fullWidth = false }: MainContentProps) {
   const isMobile = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
   const isTablet = useMediaQuery(
     `(min-width: ${MOBILE_BREAKPOINT}px) and (max-width: 1023px)`
@@ -134,10 +138,10 @@ function MainContent({ children, className }: MainContentProps) {
       exit="exit"
     >
       <div
-        className="mx-auto w-full"
+        className={cn("w-full", !fullWidth && "mx-auto")}
         style={{
-          maxWidth: CONTENT_MAX_WIDTH,
           padding,
+          maxWidth: fullWidth ? undefined : CONTENT_MAX_WIDTH,
         }}
       >
         {children}
@@ -289,12 +293,15 @@ export interface DashboardLayoutProps {
   defaultSidebarCollapsed?: boolean;
   /** Additional className for main content */
   className?: string;
+  /** If true, content will use full available width (for kanban boards, wide tables, etc.) */
+  fullWidth?: boolean;
 }
 
 export function DashboardLayout({
   children,
   defaultSidebarCollapsed = false,
   className,
+  fullWidth = false,
 }: DashboardLayoutProps) {
   const mounted = useMounted();
   const isMobile = useMediaQuery(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
@@ -352,7 +359,7 @@ export function DashboardLayout({
       />
 
       {/* Main content */}
-      <MainContent className={className}>{children}</MainContent>
+      <MainContent className={className} fullWidth={fullWidth}>{children}</MainContent>
     </div>
   );
 }

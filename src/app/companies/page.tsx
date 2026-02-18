@@ -368,7 +368,7 @@ export default async function CompaniesPage({ searchParams }: PageProps) {
   const { search, stage, sector, source, page } = params;
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

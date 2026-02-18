@@ -4,11 +4,7 @@ import { ArrowLeftIcon } from "@radix-ui/react-icons";
 
 import { auth } from "@/lib/auth";
 import { getDealById } from "@/lib/db/deals";
-import {
-  DashboardLayout,
-  DashboardContent,
-  PageHeader,
-} from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import { DealForm } from "@/components/deals/deal-form";
 import { Button } from "@/components/ui/button";
 
@@ -55,9 +51,8 @@ export default async function EditDealPage({ params }: PageProps) {
   };
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        <PageHeader
+    <>
+      <PageHeader
           title={`Edit: ${deal.dealName}`}
           description={`Update deal information for ${deal.company.name}`}
           breadcrumbs={[
@@ -87,8 +82,7 @@ export default async function EditDealPage({ params }: PageProps) {
             mode="edit"
           />
         </div>
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }
 

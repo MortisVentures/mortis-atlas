@@ -1,12 +1,12 @@
 import { DashboardLayout, DashboardContent } from "@/components/layout";
 
-export default function DealsLayout({
+export default function TasksLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <DashboardLayout fullWidth>
+    <DashboardLayout>
       <DashboardContent>{children}</DashboardContent>
     </DashboardLayout>
   );

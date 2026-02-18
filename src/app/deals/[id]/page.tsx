@@ -14,11 +14,7 @@ import {
 
 import { auth } from "@/lib/auth";
 import { getDealById } from "@/lib/db/deals";
-import {
-  DashboardLayout,
-  DashboardContent,
-  PageHeader,
-} from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -117,9 +113,8 @@ export default async function DealDetailPage({ params }: PageProps) {
   const ownershipTarget = deal.ownershipTarget ? Number(deal.ownershipTarget) : null;
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        <PageHeader
+    <>
+      <PageHeader
           title={deal.dealName}
           description={`Deal with ${deal.company.name}`}
           breadcrumbs={[
@@ -554,8 +549,7 @@ export default async function DealDetailPage({ params }: PageProps) {
             )}
           </div>
         </div>
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }
 

@@ -15,11 +15,7 @@ import {
   ReloadIcon,
 } from "@radix-ui/react-icons";
 
-import {
-  DashboardLayout,
-  DashboardContent,
-  PageHeader,
-} from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -441,9 +437,8 @@ export default function ICMemosPage() {
   }, [memos]);
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        <PageHeader
+    <>
+      <PageHeader
           title="IC Memos"
           description="Investment Committee memos and voting"
           breadcrumbs={[
@@ -580,7 +575,6 @@ export default function ICMemosPage() {
             </CardContent>
           </Card>
         )}
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }

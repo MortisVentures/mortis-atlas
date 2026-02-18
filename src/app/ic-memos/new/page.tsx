@@ -22,7 +22,7 @@ import {
 } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 
-import { DashboardLayout, DashboardContent, PageHeader } from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -786,9 +786,8 @@ export default function NewICMemoPage() {
   };
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        <PageHeader
+    <>
+      <PageHeader
           title="Create IC Memo"
           description="Mortis Ventures Investment Committee Memo"
           breadcrumbs={[
@@ -1457,7 +1456,6 @@ export default function NewICMemoPage() {
 
         {/* Return to Top Button */}
         <ReturnToTop />
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }

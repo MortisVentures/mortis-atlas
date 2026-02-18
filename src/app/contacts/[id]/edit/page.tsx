@@ -36,7 +36,7 @@ export default async function EditContactPage({ params }: PageProps) {
   });
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="mb-8">
         <Link

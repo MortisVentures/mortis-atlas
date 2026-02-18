@@ -29,7 +29,6 @@ import {
 } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 
-import { DashboardLayout, DashboardContent } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -322,35 +321,25 @@ export default function ICMemoDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <DashboardLayout>
-        <DashboardContent>
-          <LoadingSkeleton />
-        </DashboardContent>
-      </DashboardLayout>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (error || !memo) {
     return (
-      <DashboardLayout>
-        <DashboardContent>
-          <div className="flex flex-col items-center justify-center py-12">
-            <FileTextIcon className="size-12 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">IC Memo Not Found</h2>
-            <p className="text-muted-foreground mb-4">{error || "The requested memo could not be found."}</p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => refetch()}>
-                <ReloadIcon className="size-4 mr-2" />
-                Retry
-              </Button>
-              <Link href="/ic-memos">
-                <Button>Back to IC Memos</Button>
-              </Link>
-            </div>
-          </div>
-        </DashboardContent>
-      </DashboardLayout>
+      <div className="flex flex-col items-center justify-center py-12">
+        <FileTextIcon className="size-12 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">IC Memo Not Found</h2>
+        <p className="text-muted-foreground mb-4">{error || "The requested memo could not be found."}</p>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => refetch()}>
+            <ReloadIcon className="size-4 mr-2" />
+            Retry
+          </Button>
+          <Link href="/ic-memos">
+            <Button>Back to IC Memos</Button>
+          </Link>
+        </div>
+      </div>
     );
   }
 
@@ -362,9 +351,8 @@ export default function ICMemoDetailPage() {
   const canVote = ["SUBMITTED", "UNDER_REVIEW", "PENDING_VOTE"].includes(memo.status);
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        {/* Header */}
+    <>
+      {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
             <Link href="/ic-memos" className="hover:text-foreground transition-colors">IC Memos</Link>
@@ -768,7 +756,6 @@ export default function ICMemoDetailPage() {
 
         {/* Return to Top Button */}
         <ReturnToTop />
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }

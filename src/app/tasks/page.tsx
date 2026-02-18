@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { CheckIcon } from "@radix-ui/react-icons";
 
+import { PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
 import { TaskManager } from "@/components/tasks/task-manager";
 import { TaskModal } from "@/components/tasks/task-modal";
@@ -36,30 +36,15 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
       {/* Page Header */}
-      <div className="border-b border-border bg-card/50">
-        <div className="container mx-auto px-6 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-atlas-md bg-gradient-to-br from-tactical-500 to-navy-500 flex items-center justify-center">
-              <CheckIcon className="size-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Tasks</h1>
-              <p className="text-sm text-muted-foreground">
-                Manage your work and track progress across all deals
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      <PageHeader
+        title="Tasks"
+        description="Manage your work and track progress across all deals"
+      />
 
       {/* Main Content */}
-      <div className="container mx-auto px-6 py-8">
+      <div className="space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,6 +87,6 @@ export default function TasksPage() {
           </div>
         </Card>
       </motion.div>
-    </div>
+    </>
   );
 }

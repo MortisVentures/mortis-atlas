@@ -16,11 +16,7 @@ import {
   ReloadIcon,
 } from "@radix-ui/react-icons";
 
-import {
-  DashboardLayout,
-  DashboardContent,
-  PageHeader,
-} from "@/components/layout";
+import { PageHeader } from "@/components/layout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -177,9 +173,8 @@ export default function PortfolioPage() {
   }, [deals]);
 
   return (
-    <DashboardLayout>
-      <DashboardContent>
-        {/* Page Header */}
+    <>
+      {/* Page Header */}
         <PageHeader
           title="Portfolio"
           description="Your invested companies"
@@ -571,7 +566,6 @@ export default function PortfolioPage() {
             </motion.div>
           )}
         </div>
-      </DashboardContent>
-    </DashboardLayout>
+    </>
   );
 }
