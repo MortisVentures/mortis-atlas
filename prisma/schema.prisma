@@ -26,6 +26,7 @@ model User {
   accounts            Account[]
   activities          Activity[]
   emailAccounts       EmailAccount[]
+  calendarAccounts    CalendarAccount[]
   auditLogs           AuditLog[]
   companies           Company[]
   contacts            Contact[]
@@ -112,6 +113,8 @@ model Company {
   deals             Deal[]
   documents         Document[]
   icMemos           ICMemo[]
+  calendarEvents    CalendarEvent[]
+  calendarAttendees CalendarAttendee[]
 
   @@index([userId])
   @@index([stage])
@@ -145,6 +148,7 @@ model Contact {
   user                   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   deals                  Deal[]     @relation("DealContact")
   referredDeals          Deal[]     @relation("DealReferrer")
+  calendarAttendees      CalendarAttendee[]
 
   @@index([userId])
   @@index([companyId])
@@ -189,6 +193,7 @@ model Deal {
   teamMembers       DealTeamMember[]
   documents         Document[]
   icMemos           ICMemo[]
+  calendarEvents    CalendarEvent[]
 
   @@index([userId])
   @@index([companyId])
@@ -230,10 +235,11 @@ model Activity {
   dealId       String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  company      Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  contact      Contact?     @relation(fields: [contactId], references: [id])
-  deal         Deal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company       Company?        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact       Contact?        @relation(fields: [contactId], references: [id])
+  deal          Deal?           @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEvent CalendarEvent?
 
   @@index([userId])
   @@index([companyId])
@@ -642,6 +648,34 @@ enum AuditAction {
 }
 
 // =============================================================================
+// CALENDAR INTEGRATION ENUMS
+// =============================================================================
+
+enum CalendarProvider {
+  GOOGLE
+  OFFICE365
+}
+
+enum MeetingType {
+  INITIAL_PITCH
+  DUE_DILIGENCE
+  PARTNER_MEETING
+  BOARD_MEETING
+  FOLLOW_UP
+  NETWORKING
+  PORTFOLIO_CHECK_IN
+  INVESTOR_UPDATE
+  OTHER
+}
+
+enum RelationshipHeat {
+  HOT       // Rising engagement
+  WARM      // Stable engagement
+  COOLING   // Declining engagement
+  COLD      // No recent meetings
+}
+
+// =============================================================================
 // EMAIL INTEGRATION MODELS
 // =============================================================================
 
@@ -761,28 +795,152 @@ model UnknownSender {
   @@index([domain])
 }
 
+// =============================================================================
+// CALENDAR INTEGRATION MODELS
+// =============================================================================
+
+model CalendarAccount {
+  id              String            @id @default(cuid())
+  userId          String
+  provider        CalendarProvider
+  email           String
+  accessToken     String            // Encrypted
+  refreshToken    String            // Encrypted
+  tokenExpiry     DateTime
+  calendarId      String            @default("primary")
+  lastSyncAt      DateTime?
+  syncCursor      String?           // pageToken for incremental sync
+  isActive        Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events          CalendarEvent[]
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([provider])
+}
+
 model CalendarEvent {
-  id              String        @id @default(cuid())
+  id              String            @id @default(cuid())
   accountId       String
-  externalId      String        // Google Calendar event ID
+  externalId      String            // Google Calendar event ID
   title           String
   description     String?
   startTime       DateTime
   endTime         DateTime
   location        String?
+  meetingLink     String?           // Zoom/Meet link extracted from description
   attendeeEmails  String[]
-  isAllDay        Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  attendeeNames   Json?             // { email: name } mapping
+  organizerEmail  String
+  isAllDay        Boolean           @default(false)
+  isRecurring     Boolean           @default(false)
+  recurringEventId String?          // ID of parent recurring event
+  status          String            @default("confirmed") // confirmed, tentative, cancelled
+
+  // Auto-detected meeting classification
+  detectedType    MeetingType?
+  typeConfidence  Float?            // 0-1 confidence score
 
   // CRM Links
   companyId       String?
   dealId          String?
-  activityId      String?       // Linked to Activity model
+  activityId      String?           @unique  // One-to-one with Activity
+  isAutoLinked    Boolean           @default(false)
+  linkConfirmed   Boolean           @default(false)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  account         CalendarAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  company         Company?          @relation(fields: [companyId], references: [id])
+  deal            Deal?             @relation(fields: [dealId], references: [id])
+  activity        Activity?         @relation(fields: [activityId], references: [id])
+  attendees       CalendarAttendee[]
+  prepBrief       MeetingPrepBrief?
 
   @@unique([accountId, externalId])
   @@index([accountId])
   @@index([startTime])
   @@index([companyId])
   @@index([dealId])
+  @@index([detectedType])
+  @@index([organizerEmail])
+}
+
+model CalendarAttendee {
+  id              String            @id @default(cuid())
+  eventId         String
+  email           String
+  name            String?
+  responseStatus  String            @default("needsAction") // needsAction, declined, tentative, accepted
+  isOrganizer     Boolean           @default(false)
+
+  // CRM Links (resolved via attendee matching)
+  contactId       String?
+  companyId       String?
+
+  event           CalendarEvent     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  contact         Contact?          @relation(fields: [contactId], references: [id])
+  company         Company?          @relation(fields: [companyId], references: [id])
+
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@index([email])
+  @@index([contactId])
+  @@index([companyId])
+}
+
+model MeetingPrepBrief {
+  id              String            @id @default(cuid())
+  eventId         String            @unique
+  generatedAt     DateTime          @default(now())
+  viewedAt        DateTime?
+
+  // Context sections (generated from CRM data)
+  dealContext     Json?             // stage, amount, team, recentActivities, nextMilestone
+  companyContext  Json?             // sector, valuation, fundingRound, previousMeetingsCount
+  attendeeProfiles Json?            // array of { name, role, company, linkedinUrl, interactionCount, lastInteraction }
+  relationshipSignals Json?         // array of { type, label, value, sentiment }
+  suggestedTalkingPoints String[]   // Based on deal stage
+  openQuestions   String[]          // From previous notes/activities
+  recentInteractions Json?          // Last 5 activities
+
+  event           CalendarEvent     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([generatedAt])
+}
+
+model RelationshipMetrics {
+  id                    String            @id @default(cuid())
+  userId                String
+  entityType            String            // "company" | "contact"
+  entityId              String
+
+  // Meeting counts
+  meetingsLast30d       Int               @default(0)
+  meetingsLast90d       Int               @default(0)
+  avgMeetingsPerMonth   Float             @default(0)
+  daysSinceLastMeeting  Int?
+  lastMeetingDate       DateTime?
+
+  // Heat scoring
+  heat                  RelationshipHeat  @default(COLD)
+  heatScore             Int               @default(0)    // 0-100
+  trendDirection        Float             @default(0)    // negative = declining, positive = rising
+
+  // Totals
+  totalMeetings         Int               @default(0)
+  totalEmails           Int               @default(0)
+
+  lastCalculatedAt      DateTime          @default(now())
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@unique([userId, entityType, entityId])
+  @@index([userId, entityType])
+  @@index([heat])
+  @@index([heatScore])
 }

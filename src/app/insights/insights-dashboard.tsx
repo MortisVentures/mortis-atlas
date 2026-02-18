@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChartIcon, LightningBoltIcon, MixerHorizontalIcon, ActivityLogIcon } from "@radix-ui/react-icons";
+import { BarChartIcon, LightningBoltIcon, MixerHorizontalIcon, ActivityLogIcon, CalendarIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 
 // Layout components
@@ -25,6 +25,7 @@ import {
   DealVolumeTrend,
   SectorDistributionChart,
   SparseDataNotice,
+  CalendarInsightsTab,
 } from "@/components/insights";
 
 // Hooks
@@ -37,7 +38,7 @@ import { DATA_THRESHOLDS } from "@/lib/insights/thresholds";
 // TYPES
 // =============================================================================
 
-type Tab = "overview" | "deal-flow" | "outcomes" | "trends";
+type Tab = "overview" | "deal-flow" | "outcomes" | "trends" | "calendar";
 
 interface TabConfig {
   id: Tab;
@@ -74,6 +75,12 @@ const tabs: TabConfig[] = [
     label: "Trends",
     icon: <MixerHorizontalIcon className="size-4" />,
     description: "Deal volume, sector shifts, valuations",
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    icon: <CalendarIcon className="size-4" />,
+    description: "Meeting patterns, relationship heat, and calendar analytics",
   },
 ];
 
@@ -483,6 +490,7 @@ export default function InsightsDashboard() {
             {activeTab === "deal-flow" && <DealFlowTab data={insightsData} />}
             {activeTab === "outcomes" && <OutcomesTab data={insightsData} />}
             {activeTab === "trends" && <TrendsTab data={insightsData} />}
+            {activeTab === "calendar" && <CalendarInsightsTab />}
           </motion.div>
         </AnimatePresence>
 
